@@ -47,8 +47,10 @@ def reap_zombies():
         print(f"Error reaping zombies: {e}")
 
 def start_warm_container(lang="python"):
-    # Correctly identify images built by build_all.sh: sylk-{lang}-runtime:{arch}
-    image = f"sylk-{lang}-runtime:{ARCH}"
+    # Map 'default' hardware identifier to 'x86' image tag
+    img_arch = "x86" if ARCH == "default" else ARCH
+    image = f"sylk-{lang}-runtime:{img_arch}"
+
     try:
         container = docker_client.containers.run(
             image,

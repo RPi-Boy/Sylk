@@ -3,9 +3,10 @@ from typing import Optional, Dict, Any
 from enum import Enum
 
 class HardwareType(str, Enum):
-    X86 = "x86"
+    DEFAULT = "default"
     ARM = "arm"
     GPU = "gpu"
+
 
 class TaskStatus(str, Enum):
     QUEUED = "queued"
@@ -17,7 +18,8 @@ class TaskStatus(str, Enum):
 class TaskIn(BaseModel):
     code: str
     language: str = "python"
-    hardware_pref: Optional[HardwareType] = HardwareType.X86
+    hardware_pref: Optional[HardwareType] = HardwareType.DEFAULT
+
 
 class TaskOut(BaseModel):
     task_id: str

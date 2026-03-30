@@ -10,7 +10,8 @@ def get_node_info():
     if "arm" in arch or "aarch" in arch:
         hardware_type = "arm"
     else:
-        hardware_type = "x86"
+        hardware_type = "default"
+
 
     return {
         "node_id": socket.gethostname(),
