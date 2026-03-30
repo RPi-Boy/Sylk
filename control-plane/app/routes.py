@@ -206,12 +206,21 @@ async def invoke_function(slug: str, body: schemas.FunctionInvoke, db: Session =
         "slug": fn.slug
     }))
 
-    # 5. Block waiting for result (worker will RPUSH to result_ready:{task_id})
+    # 5. Async-poll for result — avoids blocking the uvicorn event loop.
+    # Worker will RPUSH to result_ready:{task_id} via /callback.
     timeout = 30
     result_key = f"result_ready:{task_id}"
-    result = r.blpop(result_key, timeout=timeout)
+    deadline = time.time() + timeout
+    result_data = None
 
-    if result is None:
+    while time.time() < deadline:
+        raw = r.lpop(result_key)
+        if raw:
+            result_data = raw
+            break
+        await asyncio.sleep(0.1)  # yield control back to event loop
+
+    if result_data is None:
         # Timeout — update task status
         db_task_ref = db.query(TaskRecord).filter(TaskRecord.task_id == task_id).first()
         if db_task_ref:
@@ -221,7 +230,6 @@ async def invoke_function(slug: str, body: schemas.FunctionInvoke, db: Session =
         raise HTTPException(status_code=504, detail="Function execution timed out (30s)")
 
     # 6. Parse the result
-    _, result_data = result
     result_payload = json.loads(result_data.decode("utf-8"))
 
     return {
