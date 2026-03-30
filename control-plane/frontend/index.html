@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Sylk | Kinetic Serverless Engine</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@400;500;700&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary-container": "#7c3aed",
+            "surface-container-high": "#1a1a1a",
+            "on-error-container": "#ffdad6",
+            "on-primary-fixed": "#25005a",
+            "on-tertiary-fixed": "#1a1c1c",
+            "primary": "#d2bbff",
+            "on-secondary": "#002e6b",
+            "error-container": "#93000a",
+            "inverse-primary": "#732ee4",
+            "surface": "#000000",
+            "tertiary-container": "#656767",
+            "on-tertiary-fixed-variant": "#454747",
+            "on-secondary-fixed": "#001a43",
+            "outline": "#958da1",
+            "error": "#ffb4ab",
+            "inverse-on-surface": "#303030",
+            "on-surface": "#ededed",
+            "on-secondary-container": "#00275e",
+            "surface-bright": "#222222",
+            "primary-fixed": "#eaddff",
+            "surface-variant": "#2a2a2a",
+            "surface-container-low": "#0a0a0a",
+            "secondary": "#aec6ff",
+            "surface-dim": "#050505",
+            "tertiary-fixed": "#e2e2e2",
+            "surface-container": "#111111",
+            "surface-container-lowest": "#000000",
+            "inverse-surface": "#e2e2e2",
+            "on-tertiary": "#2f3131",
+            "surface-tint": "#d2bbff",
+            "on-error": "#690005",
+            "surface-container-highest": "#333333",
+            "on-primary-fixed-variant": "#5a00c6",
+            "secondary-container": "#508eff",
+            "secondary-fixed-dim": "#aec6ff",
+            "on-background": "#ededed",
+            "secondary-fixed": "#d8e2ff",
+            "on-primary-container": "#ede0ff",
+            "primary-fixed-dim": "#d2bbff",
+            "tertiary-fixed-dim": "#c6c6c7",
+            "tertiary": "#c6c6c7",
+            "outline-variant": "#333333",
+            "on-tertiary-container": "#e5e6e6",
+            "background": "#000000",
+            "on-primary": "#3f008e",
+            "on-surface-variant": "#a1a1a1",
+            "on-secondary-fixed-variant": "#004397"
+          },
+          fontFamily: {
+            "headline": ["Inter", "sans-serif"],
+            "body": ["Inter", "sans-serif"],
+            "label": ["Space Grotesk", "sans-serif"]
+          },
+          borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .kinetic-gradient {
+      background: linear-gradient(135deg, #d2bbff 0%, #7c3aed 100%);
+    }
+
+    .glass-card {
+      background: rgba(17, 17, 17, 0.4);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .hero-glow {
+      background: radial-gradient(circle at center, rgba(124, 58, 237, 0.15) 0%, transparent 70%);
+    }
+
+    .text-balance {
+      text-wrap: balance;
+    }
+
+    .drop-zone-border {
+      background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%23333' stroke-width='2' stroke-dasharray='8%2c 12' stroke-linecap='square'/%3e%3c/svg%3e");
+    }
+
+    #hero-monolith-canvas {
+      mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+    }
+
+    .monolith-blob {
+      transition: transform 0.2s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+    }
+
+    @keyframes slow-pulse {
+      0%, 100% { transform: scale(1) translate(0, 0); }
+      50% { transform: scale(1.05) translate(10px, -10px); }
+    }
+
+    .animate-slow-pulse {
+      animation: slow-pulse 15s ease-in-out infinite;
+    }
+  </style>
+  <script src="js/session.js"></script>
+  <script src="js/api.js"></script>
+</head>
+
+<body class="bg-background text-on-background font-body selection:bg-primary/30 antialiased">
+  <!-- TopNavBar -->
+  <nav class="fixed top-0 w-full z-[100] bg-black/60 backdrop-blur-xl border-b border-white/5">
+    <div class="flex items-center justify-between px-8 py-4 max-w-7xl mx-auto">
+      <div class="flex items-center gap-10">
+        <span class="text-2xl font-bold tracking-tighter text-white font-headline cursor-pointer" onclick="location.href='index.html'">Sylk</span>
+        <div class="hidden md:flex gap-8 items-center">
+          <a class="text-white font-medium text-sm tracking-tight border-b-2 border-primary pb-1" href="index.html">Home</a>
+          <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="deploy.html">Deploy</a>
+          <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="projects.html">Projects</a>
+          <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="logs.html">Logs</a>
+          <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="metrics.html">Usage</a>
+        </div>
+      </div>
+      <div class="flex items-center gap-6">
+        <div class="hidden lg:flex items-center bg-surface-container-low px-3 py-1.5 rounded-lg border border-white/5">
+          <span class="material-symbols-outlined text-sm text-outline mr-2">search</span>
+          <input class="bg-transparent border-none text-xs focus:ring-0 w-40 text-on-surface" placeholder="Search..." type="text"/>
+          <span class="text-[10px] text-outline bg-surface-container-high px-1.5 py-0.5 rounded border border-white/10 ml-2">⌘K</span>
+        </div>
+        <button class="material-symbols-outlined text-on-surface-variant hover:text-white transition-colors">notifications</button>
+        <button class="bg-white text-black px-6 py-2 rounded-full text-sm font-bold hover:bg-white/90 transition-all active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.1)]" onclick="location.href='auth.html'">Login / Sign Up</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Massive Centered Hero Section with Background Monolith -->
+  <header class="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-20 px-8 overflow-hidden">
+    <!-- Background Monolith Container -->
+    <div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none opacity-40">
+      <div class="relative w-full h-full max-w-6xl monolith-blob animate-slow-pulse" id="monolith-container">
+        <div class="absolute inset-0 flex items-center justify-center">
+          <img alt="Abstract Monolith" class="w-full h-full object-contain mix-blend-screen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhI2v3oi8jL0-yHQdfrbpJmCYtwsUe4laPUTYycPV7ZawmBdYrTK3So1UVC2ZhbZKnFl9Q8LAPfigzKs9N-sI1Amwt5dPawU-hWT6mrQInKLMkSZLr2ukLgQh6kSNqZiE6V4tU6aAOX5NDF31j0Y9k3pkxg6HCXMTqZdqRpJf8dDzyPhHp_JHs0P-1SQW0_AlfAW75orCu1CSCUdqBKEJRI48jKYim0WEHpc_YmsxVaRpYwGjPlgKmLM3mJdxpsk_wsJHPs3nztkk"/>
+        </div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-radial-gradient from-primary/20 via-transparent to-transparent blur-[120px]"></div>
+      </div>
+    </div>
+    <div class="absolute inset-0 z-0 hero-glow"></div>
+    <div class="relative z-20 text-center max-w-4xl mx-auto">
+      <h1 class="text-6xl md:text-8xl font-extrabold text-white tracking-tight mb-8 leading-[0.9] text-balance">
+        Compute at the <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-container to-secondary">velocity of light.</span>
+      </h1>
+      <p class="text-lg md:text-2xl text-on-surface-variant max-w-2xl mx-auto mb-12 font-medium text-balance">
+        Sylk is the kinetic engine for modern applications. Deploy globally in seconds with absolute zero infrastructure management.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-5 justify-center items-center">
+        <button class="bg-white text-black text-lg font-bold px-12 py-4 rounded-full hover:shadow-[0_0_40px_rgba(255,255,255,0.2)] transition-all flex items-center gap-2" onclick="location.href='deploy.html'">
+          Deploy Session
+        </button>
+        <button class="bg-surface-container-high text-white text-lg font-semibold px-12 py-4 rounded-full border border-white/10 hover:bg-surface-bright transition-all">
+          Documentation
+        </button>
+      </div>
+    </div>
+
+    <!-- Integrated Drop Zone -->
+    <div class="relative z-20 w-full max-w-3xl mt-24">
+      <input type="file" id="file-input" class="hidden" accept=".py,.js,.go,.rs" />
+      <div id="drop-zone" class="drop-zone-border p-12 rounded-2xl flex flex-col items-center justify-center gap-4 bg-surface-container-lowest/50 backdrop-blur-sm group cursor-pointer hover:bg-surface-container-low/50 transition-all">
+        <div class="w-16 h-16 rounded-2xl bg-primary-container/10 flex items-center justify-center text-primary mb-2 group-hover:scale-110 transition-transform">
+          <span class="material-symbols-outlined text-4xl">upload_file</span>
+        </div>
+        <h3 id="drop-title" class="text-xl font-bold text-white">Drop your function here</h3>
+        <p id="drop-desc" class="text-on-surface-variant text-sm">or click to browse your local repository</p>
+        <div class="mt-4 flex items-center gap-3 text-[10px] font-label tracking-widest uppercase text-outline">
+          <span>Node.js</span>
+          <span class="w-1 h-1 bg-outline rounded-full"></span>
+          <span>Python</span>
+          <span class="w-1 h-1 bg-outline rounded-full"></span>
+          <span>Rust</span>
+          <span class="w-1 h-1 bg-outline rounded-full"></span>
+          <span>Go</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Global Edge Network Section -->
+  <section class="py-32 px-8 bg-surface border-y border-white/5">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+        <div>
+          <span class="font-label text-primary text-xs uppercase tracking-widest font-bold mb-6 block">Infrastructure</span>
+          <h2 class="text-5xl font-bold text-white mb-8 tracking-tight">Global Edge Network.</h2>
+          <p class="text-xl text-on-surface-variant leading-relaxed mb-10">
+            Your code resides on every continent, served from over 280 edge locations. We ensure 15ms median latency by routing traffic to the closest compute node automatically.
+          </p>
+          <div class="grid grid-cols-2 gap-8">
+            <div>
+              <div class="text-3xl font-bold text-white mb-1">15ms</div>
+              <div class="text-sm text-on-surface-variant uppercase tracking-wider font-label">Avg Latency</div>
+            </div>
+            <div>
+              <div class="text-3xl font-bold text-white mb-1">280+</div>
+              <div class="text-sm text-on-surface-variant uppercase tracking-wider font-label">Edge Nodes</div>
+            </div>
+          </div>
+        </div>
+        <div class="relative">
+          <div class="aspect-square glass-card rounded-3xl p-1 flex items-center justify-center overflow-hidden">
+            <div class="w-full h-full relative bg-black rounded-[1.4rem] overflow-hidden">
+              <img alt="Network Mesh" class="w-full h-full object-cover opacity-40" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4HPWE5s_tBU-2RiXuWrOrbvSu57XUaE-AJMCYL8DAALhtyzyZNlqiL8qgZLVRjds5x5pC7N_RmgqsKP6Ky4JiybgQqazd24VlEns2L_njTSksXqZ_5MHCeeXBAhxX6UMN1ooP--KJCVdT27fw4zVfLBoySYNIBmbHAGN_-yOosUrZgkVWMiV886LKw5HZKXlpqA3wGCyXKKBGVhPU1RT1DJ1TKe7UpEaMpPQErWO37ozj_pkJMpUbasYvRWV-Q0lXa7bGedzOVL8"/>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="w-32 h-32 border border-primary/40 rounded-full animate-ping"></div>
+                <div class="w-4 h-4 bg-primary rounded-full shadow-[0_0_20px_#d2bbff]"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-black border-t border-white/5 w-full py-20 px-12">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12">
+      <div class="flex flex-col gap-6">
+        <span class="text-3xl font-bold tracking-tighter text-white font-headline">Sylk</span>
+        <p class="max-w-xs text-on-surface-variant text-sm leading-relaxed">The global compute platform for high-performance applications. Engineered for the next generation of the web.</p>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-16">
+        <div class="flex flex-col gap-4">
+          <span class="text-white font-bold text-sm tracking-tight">Product</span>
+          <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Features</a>
+          <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Integrations</a>
+        </div>
+        <div class="flex flex-col gap-4">
+          <span class="text-white font-bold text-sm tracking-tight">Resources</span>
+          <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Documentation</a>
+          <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Guides</a>
+        </div>
+      </div>
+    </div>
+    <div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <p class="font-['Space_Grotesk'] text-[0.7rem] uppercase tracking-widest text-outline">© 2024 Sylk Kinetic Systems Inc.</p>
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+        <span class="text-[0.7rem] font-['Space_Grotesk'] uppercase tracking-widest text-outline">All Systems Operational</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    window.addEventListener('scroll', () => {
+      const scrolled = window.scrollY;
+      const monolith = document.getElementById('monolith-container');
+      if (monolith) {
+        const scale = 1 + scrolled * 0.0002;
+        const translateY = scrolled * 0.15;
+        const rotate = scrolled * 0.02;
+        const opacity = Math.max(0.1, 0.4 - scrolled * 0.0005);
+        monolith.style.transform = `scale(${scale}) translateY(${translateY}px) rotate(${rotate}deg)`;
+        monolith.style.opacity = opacity;
+      }
+    });
+
+    // Deployment Logic
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const dropTitle = document.getElementById('drop-title');
+    const dropDesc = document.getElementById('drop-desc');
+
+    if (dropZone && fileInput) {
+      dropZone.addEventListener('click', () => fileInput.click());
+      ['dragover', 'dragleave', 'drop'].forEach(e => {
+        dropZone.addEventListener(e, (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+        });
+      });
+
+      dropZone.addEventListener('dragover', () => dropZone.classList.add('bg-primary/20', 'border-primary/50'));
+      dropZone.addEventListener('dragleave', () => dropZone.classList.remove('bg-primary/20', 'border-primary/50'));
+      dropZone.addEventListener('drop', (e) => {
+        dropZone.classList.remove('bg-primary/20', 'border-primary/50');
+        const files = e.dataTransfer.files;
+        if (files.length) handleFile(files[0]);
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) handleFile(e.target.files[0]);
+      });
+    }
+
+    async function handleFile(file) {
+      dropTitle.textContent = "Deploying...";
+      dropTitle.className = "text-xl font-bold text-white";
+      dropDesc.textContent = `Reading ${file.name}`;
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const code = e.target.result;
+        try {
+          const res = await SylkAPI.submitTask(code, "default");
+          dropTitle.textContent = "Deployed Successfully!";
+          dropTitle.classList.add("text-secondary");
+          dropDesc.textContent = `Task ID: ${res.task_id}`;
+          setTimeout(() => {
+            window.location.href = `logs.html?task=${res.task_id}`;
+          }, 1500);
+        } catch (err) {
+          dropTitle.textContent = "Deployment Failed";
+          dropTitle.classList.add("text-error");
+          dropDesc.textContent = err.message || "Unauthorized or network failure.";
+        }
+      };
+      reader.readAsText(file);
+    }
+  </script>
+</body>
+</html>

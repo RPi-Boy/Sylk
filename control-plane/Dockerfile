@@ -7,6 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application source
 COPY app/ app/
+COPY frontend/ frontend/
 # Initialize dummy analytics DB if not exists
 RUN touch sylk_analytics.db
 

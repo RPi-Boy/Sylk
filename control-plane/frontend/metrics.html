@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Sylk | Performance Metrics</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@400;500;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-container": "#7c3aed",
+                        "surface-container-high": "#1a1a1a",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-fixed": "#25005a",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "primary": "#d2bbff",
+                        "on-secondary": "#002e6b",
+                        "error-container": "#93000a",
+                        "inverse-primary": "#732ee4",
+                        "surface": "#000000",
+                        "tertiary-container": "#656767",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "on-secondary-fixed": "#001a43",
+                        "outline": "#958da1",
+                        "error": "#ffb4ab",
+                        "inverse-on-surface": "#303030",
+                        "on-surface": "#ededed",
+                        "on-secondary-container": "#00275e",
+                        "surface-bright": "#222222",
+                        "primary-fixed": "#eaddff",
+                        "surface-variant": "#2a2a2a",
+                        "surface-container-low": "#0a0a0a",
+                        "secondary": "#aec6ff",
+                        "surface-dim": "#050505",
+                        "tertiary-fixed": "#e2e2e2",
+                        "surface-container": "#111111",
+                        "surface-container-lowest": "#000000",
+                        "inverse-surface": "#e2e2e2",
+                        "on-tertiary": "#2f3131",
+                        "surface-tint": "#d2bbff",
+                        "on-error": "#690005",
+                        "surface-container-highest": "#333333",
+                        "on-primary-fixed-variant": "#5a00c6",
+                        "secondary-container": "#508eff",
+                        "secondary-fixed-dim": "#aec6ff",
+                        "on-background": "#ededed",
+                        "secondary-fixed": "#d8e2ff",
+                        "on-primary-container": "#ede0ff",
+                        "primary-fixed-dim": "#d2bbff",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "tertiary": "#c6c6c7",
+                        "outline-variant": "#333333",
+                        "on-tertiary-container": "#e5e6e6",
+                        "background": "#000000",
+                        "on-primary": "#3f008e",
+                        "on-surface-variant": "#a1a1a1",
+                        "on-secondary-fixed-variant": "#004397"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .kinetic-gradient {
+            background: linear-gradient(135deg, #d2bbff 0%, #7c3aed 100%);
+        }
+
+        .glass-card {
+            background: rgba(17, 17, 17, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .hero-glow {
+            background: radial-gradient(circle at top right, rgba(124, 58, 237, 0.08) 0%, transparent 60%);
+        }
+    </style>
+    <script src="js/session.js"></script>
+    <script src="js/api.js"></script>
+</head>
+
+<body class="bg-background text-on-background font-body selection:bg-primary/30 antialiased">
+    <!-- TopNavBar -->
+    <nav class="fixed top-0 w-full z-[100] bg-black/60 backdrop-blur-xl border-b border-white/5">
+        <div class="flex items-center justify-between px-8 py-4 max-w-7xl mx-auto">
+            <div class="flex items-center gap-10">
+                <span class="text-2xl font-bold tracking-tighter text-white font-headline cursor-pointer"
+                    onclick="location.href='index.html'">Sylk</span>
+                <div class="hidden md:flex gap-8 items-center">
+                    <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight"
+                        href="index.html">Home</a>
+                    <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight"
+                        href="deploy.html">Deploy</a>
+                    <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight"
+                        href="projects.html">Projects</a>
+                    <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight"
+                        href="logs.html">Logs</a>
+                    <a class="text-white font-medium text-sm tracking-tight border-b-2 border-primary pb-1"
+                        href="metrics.html">Usage</a>
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <div
+                    class="hidden lg:flex items-center bg-surface-container-low px-3 py-1.5 rounded-lg border border-white/5">
+                    <span class="material-symbols-outlined text-sm text-outline mr-2">search</span>
+                    <input class="bg-transparent border-none text-xs focus:ring-0 w-40 text-on-surface"
+                        placeholder="Search function..." type="text" />
+                    <span
+                        class="text-[10px] text-outline bg-surface-container-high px-1.5 py-0.5 rounded border border-white/10 ml-2">⌘K</span>
+                </div>
+                <button
+                    class="material-symbols-outlined text-on-surface-variant hover:text-white transition-colors">notifications</button>
+                <button
+                    class="bg-white text-black px-6 py-2 rounded-full text-sm font-bold hover:bg-white/90 transition-all active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                    onclick="location.href='auth.html'">Login / Sign Up</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="relative pt-32 pb-20 px-8 max-w-7xl mx-auto min-h-screen">
+        <div class="absolute inset-0 z-0 hero-glow pointer-events-none"></div>
+        <!-- Header Section -->
+        <header class="relative z-10 mb-16 flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div class="space-y-4">
+                <div class="flex items-center gap-3 mb-2">
+                    <span
+                        class="font-label text-[10px] uppercase tracking-[0.2em] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded">Production</span>
+                    <span class="font-label text-[10px] uppercase tracking-[0.2em] text-outline">v2.4.0-stable</span>
+                </div>
+                <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-white font-headline leading-none">
+                    edge-compute-engine</h1>
+                <p class="text-on-surface-variant max-w-2xl text-lg font-medium">Real-time performance metrics for your
+                    distributed function. Analyzing traffic across 24 global edge nodes.</p>
+            </div>
+            <div class="flex gap-3">
+                <div class="flex bg-surface-container-low rounded-full p-1 border border-white/5">
+                    <button
+                        class="px-5 py-2 text-xs font-bold text-black bg-white rounded-full transition-all">LIVE</button>
+                    <button
+                        class="px-5 py-2 text-xs font-bold text-on-surface-variant hover:text-white transition-colors">24H</button>
+                    <button
+                        class="px-5 py-2 text-xs font-bold text-on-surface-variant hover:text-white transition-colors">7D</button>
+                </div>
+                <button onclick="location.href='logs.html'"
+                    class="bg-surface-container-high text-white px-5 py-2 rounded-full text-xs font-bold flex items-center gap-2 border border-white/10 hover:bg-surface-bright transition-all">
+                    <span class="material-symbols-outlined text-sm">terminal</span> View Logs
+                </button>
+            </div>
+        </header>
+
+        <!-- Metrics Grid -->
+        <section class="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- Average Latency -->
+            <div onclick="location.href='logs.html'"
+                class="bg-surface-container-low rounded-2xl p-8 border border-white/5 flex flex-col justify-between h-48 hover:border-primary/40 cursor-pointer transition-all group">
+                <div class="flex justify-between items-start">
+                    <span class="font-label text-[10px] font-bold text-primary tracking-widest uppercase">Avg
+                        Latency</span>
+                    <span class="material-symbols-outlined text-primary text-xl">speed</span>
+                </div>
+                <div>
+                    <div class="flex items-baseline gap-2">
+                        <span id="metric-latency"
+                            class="text-5xl font-bold tracking-tight text-white font-headline">-</span>
+                        <span class="text-lg font-medium text-on-surface-variant">ms</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Request Rate -->
+            <div onclick="location.href='logs.html'"
+                class="bg-surface-container-low rounded-2xl p-8 border border-white/5 flex flex-col justify-between h-48 hover:border-secondary/40 cursor-pointer transition-all group">
+                <div class="flex justify-between items-start">
+                    <span class="font-label text-[10px] font-bold text-secondary tracking-widest uppercase">Total
+                        Tasks</span>
+                    <span class="material-symbols-outlined text-secondary text-xl">dynamic_feed</span>
+                </div>
+                <div>
+                    <div class="flex items-baseline gap-2">
+                        <span id="metric-tasks"
+                            class="text-5xl font-bold tracking-tight text-white font-headline">-</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Error Rate -->
+            <div onclick="location.href='logs.html'"
+                class="md:col-span-2 bg-surface-container-low rounded-2xl p-8 border border-error/20 flex flex-col justify-between h-48 relative overflow-hidden group hover:border-error/40 cursor-pointer transition-all">
+                <div class="relative z-10 flex justify-between items-start">
+                    <span class="font-label text-[10px] font-bold text-error tracking-widest uppercase">Error
+                        Rate</span>
+                    <span class="material-symbols-outlined text-error text-xl">error_outline</span>
+                </div>
+                <div class="relative z-10">
+                    <div class="flex items-baseline gap-2">
+                        <span id="metric-error"
+                            class="text-5xl font-bold tracking-tight text-white font-headline">-</span>
+                        <span class="text-lg font-medium text-on-surface-variant">%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Performance Graph Placeholder -->
+        <section class="relative z-10 bg-surface-container-low rounded-2xl border border-white/5 p-8 mb-8 h-[400px]">
+            <h3 class="text-xl font-bold text-white font-headline mb-6">Response Time Distribution</h3>
+            <div class="flex items-end gap-2 h-64 px-4 border-l border-b border-white/10">
+                <div class="flex-1 bg-primary/20 h-[30%] rounded-t-sm"></div>
+                <div class="flex-1 bg-primary/30 h-[45%] rounded-t-sm"></div>
+                <div class="flex-1 bg-primary/40 h-[60%] rounded-t-sm"></div>
+                <div class="flex-1 bg-primary/60 h-[80%] rounded-t-sm shadow-[0_0_15px_rgba(210,187,255,0.3)]"></div>
+                <div class="flex-1 bg-primary/40 h-[65%] rounded-t-sm"></div>
+                <div class="flex-1 bg-primary/20 h-[40%] rounded-t-sm"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-black border-t border-white/5 w-full py-20 px-12">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12">
+            <div>
+                <span class="text-3xl font-bold tracking-tighter text-white font-headline cursor-pointer"
+                    onclick="location.href='index.html'">Sylk</span>
+                <p class="max-w-xs text-on-surface-variant text-sm leading-relaxed mt-4">The global compute platform for high-performance applications. Engineered for the next generation of the web.</p>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p class="font-['Space_Grotesk'] text-[0.7rem] uppercase tracking-widest text-outline">© 2024 Sylk Kinetic Systems Inc.</p>
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span class="text-[0.7rem] font-['Space_Grotesk'] uppercase tracking-widest text-outline">All Systems Operational</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                const stats = await SylkAPI.getAnalytics();
+                document.getElementById('metric-latency').textContent = stats.avg_latency_ms;
+                document.getElementById('metric-tasks').textContent = stats.total;
+                document.getElementById('metric-error').textContent = stats.error_rate_pct;
+            } catch (error) {
+                console.error("Failed to load analytics:", error);
+            }
+        });
+    </script>
+</body>
+</html>
