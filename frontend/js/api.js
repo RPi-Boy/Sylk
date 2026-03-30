@@ -1,5 +1,5 @@
 // api.js - Unified Control Plane Client
-const API_BASE = "http://localhost:8000";
+const API_BASE = "";
 
 class SylkAPI {
     static async fetchWithAuth(endpoint, options = {}) {
