@@ -28,7 +28,7 @@ POLLING_INTERVAL = config.get("polling_interval", 2)
 ARCH = config.get("arch", get_node_info()["hardware_type"])
 WARM_POOL_SIZE = 2
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+REDIS_URL = config.get("redis_url", os.getenv("REDIS_URL", "redis://localhost:6379"))
 r = redis.from_url(REDIS_URL)
 docker_client = docker.from_env()
 

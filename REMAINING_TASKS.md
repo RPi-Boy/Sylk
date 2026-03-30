@@ -4,7 +4,7 @@ Based on the directory structure (`node-agent`, `mock-cloud`, `runtimes`, `scrip
 
 ---
 
-## 1. Execution Layer: Node Agent & Secure Runtimes ⚙️
+## 1. Execution Layer: Node Agent & Secure Runtimes
 The worker nodes are currently not actively executing code in sandboxes. This is the most critical next phase.
 
 - [ ] **Finalize `runtimes/` Infrastructure:**
@@ -19,7 +19,7 @@ The worker nodes are currently not actively executing code in sandboxes. This is
 
 ---
 
-## 2. Scalability Layer: Mock Cloud & Bursting ☁️
+## 2. Scalability Layer: Mock Cloud & Bursting
 When local edge nodes reach capacity, the system needs to dynamically provision backup resources.
 
 - [ ] **Finalize `mock-cloud/cloud_burst_sim.py`:**
@@ -28,7 +28,7 @@ When local edge nodes reach capacity, the system needs to dynamically provision 
 
 ---
 
-## 3. Infrastructure & Networking 🌐
+## 3. Infrastructure & Networking
 For physical edge devices to communicate safely with the Control Plane over the internet (without port forwarding).
 
 - [ ] **Tailscale / VPN Integration (`scripts/setup_tailscale.sh`):**
@@ -37,7 +37,7 @@ For physical edge devices to communicate safely with the Control Plane over the 
 
 ---
 
-## 4. Testing, Benchmarking & Polish 🚀
+## 4. Testing, Benchmarking & Polish
 Once the entire pipeline is connected, we need to prove it scales and handles failures.
 
 - [ ] **Execute `scripts/stress_test.py`:**
