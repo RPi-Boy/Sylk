@@ -5,21 +5,21 @@ This document outlines the specific tasks and technical specifications for the D
 ## 1. Multi-Architecture Image Building
 **Goal:** Create lightweight, executable sandbox images that work seamlessly on both x86 machines and ARM-based edge devices (Raspberry Pi, Jetson).
 
-*   [ ] **Setup `buildx`:** Configure `docker buildx` for multi-architecture builds.
-*   [ ] **Python Runtime (`runtimes/python-runtime/Dockerfile`):**
+*   [x] **Setup `buildx`:** Configure `docker buildx` for multi-architecture builds.
+*   [x] **Python Runtime (`runtimes/python-runtime/Dockerfile`):**
     *   **Base Image:** `python:3.11-alpine`
     *   **Specs:** Include a minimal HTTP wrapper running on port 5000 to receive and execute the task code.
-*   [ ] **Node.js Runtime (`runtimes/node-runtime/Dockerfile`):**
+*   [x] **Node.js Runtime (`runtimes/node-runtime/Dockerfile`):**
     *   **Base Image:** Appropriate lightweight Node.js Alpine image.
-*   [ ] **Explicit Tagging:** Tag images specifically to avoid `Exec format error` during pulls:
+*   [x] **Explicit Tagging:** Tag images specifically to avoid `Exec format error` during pulls:
     *   `sylk-runtime:x86` (for linux/amd64)
     *   `sylk-runtime:arm` (for linux/arm64)
-*   [ ] **Automation (`runtimes/build_all.sh`):** Write a bash script to rebuild and tag all runtime images cleanly.
+*   [x] **Automation (`runtimes/build_all.sh`):** Write a bash script to rebuild and tag all runtime images cleanly.
 
 ## 2. Hardened Sandboxing Configuration
 **Goal:** Ensure that user-provided code runs in a strictly isolated environment without network or filesystem access.
 
-*   [ ] **Define `docker run` execution flags:**
+*   [x] **Define `docker run` execution flags:**
     *   `--network none`: Completely disable networking to prevent data exfiltration.
     *   `--read-only`: Mount the container's root filesystem as read-only to prevent persistent malware.
     *   `--memory 512m`: Implement a hard memory limit to prevent RAM exhaustion and Host OS crashes.
@@ -76,3 +76,15 @@ This document outlines the specific tasks and technical specifications for the D
 - [ ] **Docker Task Timeout**: The Docker runtime containers should have a maximum execution time (e.g., 60s) to prevent runaway code.
 - [ ] **Image Caching**: Pre-pull the `sylk-runtime` images in the `build_all.sh` script to ensure immediate availability.
 - [ ] **GPU Passthrough**: For the `gpu` runtime, ensure the `Dockerfile` includes CUDA drivers or necessary platform-specific libraries.
+
+## Aarav Suggests
+
+### Issue: Network Isolation vs Port 5000 Binding
+Both the Python and Node.js runtimes have been structured as HTTP servers listening on port 5000. However, the security specification mandates the `--network none` flag to prevent data exfiltration. With `--network none`, port publishing to the host is impossible because the container's network namespace only contains a loopback interface (`lo`). 
+
+### Solution / Workaround
+To strictly enforce the `--network none` rule while still utilizing the existing HTTP wrappers on port 5000, the Node Agent will use `docker exec` (via `docker-py`) to execute a command *inside* the container that sends a loopback HTTP POST request to itself. 
+- **Python Runtime:** We will `exec` a `python -c` snippet that uses the standard `urllib` library to send the payload to `localhost:5000`.
+- **Node.js Runtime:** We will `exec` a `node -e` snippet that uses the native `fetch` API to send the payload to `localhost:5000`.
+
+This approach keeps `--network none` perfectly secure, doesn't require extra software like `curl`, and allows the Node Agent to cleanly collect the JSON response from `stdout`. Additionally, tasks will only be acknowledged (ACKed) in Redis after successful Docker execution to ensure high reliability.
