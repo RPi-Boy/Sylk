@@ -22,7 +22,20 @@ const Session = {
     }
 };
 
-// Auto-run auth check on page load if not on auth.html or landing page
-if (!window.location.pathname.endsWith("auth.html") && !window.location.pathname.endsWith("index.html") && window.location.pathname !== "/") {
+// Pages that do NOT require authentication to view
+const PUBLIC_PAGES = [
+    "auth.html",
+    "index.html",
+    "logs.html",
+    "metrics.html",
+    "projects.html",
+    "deploy.html",
+    "/"
+];
+
+const currentPath = window.location.pathname;
+const isPublicPage = PUBLIC_PAGES.some(page => currentPath.endsWith(page) || currentPath === page);
+
+if (!isPublicPage) {
     Session.requireAuth();
 }

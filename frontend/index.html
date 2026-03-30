@@ -103,7 +103,6 @@
       background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%23333' stroke-width='2' stroke-dasharray='8%2c 12' stroke-linecap='square'/%3e%3c/svg%3e");
     }
 
-    /* Scroll-triggered Monolith Styles */
     #hero-monolith-canvas {
       mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
       -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
@@ -114,15 +113,8 @@
     }
 
     @keyframes slow-pulse {
-
-      0%,
-      100% {
-        transform: scale(1) translate(0, 0);
-      }
-
-      50% {
-        transform: scale(1.05) translate(10px, -10px);
-      }
+      0%, 100% { transform: scale(1) translate(0, 0); }
+      50% { transform: scale(1.05) translate(10px, -10px); }
     }
 
     .animate-slow-pulse {
@@ -134,307 +126,65 @@
 </head>
 
 <body class="bg-background text-on-background font-body selection:bg-primary/30 antialiased">
-<<<<<<< HEAD
-<!-- TopNavBar -->
-<nav class="fixed top-0 w-full z-[100] bg-black/60 backdrop-blur-xl border-b border-white/5">
-<div class="flex items-center justify-between px-8 py-4 max-w-7xl mx-auto">
-<div class="flex items-center gap-10">
-<span class="text-2xl font-bold tracking-tighter text-white font-headline cursor-pointer" onclick="location.href='index.html'">Sylk</span>
-<div class="hidden md:flex gap-8 items-center">
-<a class="text-white font-medium text-sm tracking-tight border-b-2 border-primary pb-1" href="index.html">Home</a>
-<a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="deploy.html">Deploy</a>
-<a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="projects.html">Projects</a>
-<a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="logs.html">Logs</a>
-<a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="metrics.html">Usage</a>
-</div>
-</div>
-<div class="flex items-center gap-6">
-<div class="hidden lg:flex items-center bg-surface-container-low px-3 py-1.5 rounded-lg border border-white/5">
-<span class="material-symbols-outlined text-sm text-outline mr-2">search</span>
-<input class="bg-transparent border-none text-xs focus:ring-0 w-40 text-on-surface" placeholder="Search..." type="text"/>
-<span class="text-[10px] text-outline bg-surface-container-high px-1.5 py-0.5 rounded border border-white/10 ml-2">⌘K</span>
-</div>
-<button class="material-symbols-outlined text-on-surface-variant hover:text-white transition-colors">notifications</button>
-<button class="bg-white text-black px-6 py-2 rounded-full text-sm font-bold hover:bg-white/90 transition-all active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.1)]" onclick="location.href='auth.html'">Login / Sign Up</button>
-</div>
-</div>
-</nav>
-<!-- Massive Centered Hero Section with Background Monolith -->
-<header class="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-20 px-8 overflow-hidden">
-<!-- Background Monolith Container -->
-<div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none opacity-40">
-<div class="relative w-full h-full max-w-6xl monolith-blob animate-slow-pulse" id="monolith-container">
-<!-- High-fidelity 3D Abstract Fluid representation from Image 11 -->
-<div class="absolute inset-0 flex items-center justify-center">
-<img alt="Abstract Monolith" class="w-full h-full object-contain mix-blend-screen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhI2v3oi8jL0-yHQdfrbpJmCYtwsUe4laPUTYycPV7ZawmBdYrTK3So1UVC2ZhbZKnFl9Q8LAPfigzKs9N-sI1Amwt5dPawU-hWT6mrQInKLMkSZLr2ukLgQh6kSNqZiE6V4tU6aAOX5NDF31j0Y9k3pkxg6HCXMTqZdqRpJf8dDzyPhHp_JHs0P-1SQW0_AlfAW75orCu1CSCUdqBKEJRI48jKYim0WEHpc_YmsxVaRpYwGjPlgKmLM3mJdxpsk_wsJHPs3nztkk"/>
-</div>
-<!-- Deep Violet Glows -->
-<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-radial-gradient from-primary/20 via-transparent to-transparent blur-[120px]"></div>
-</div>
-</div>
-<div class="absolute inset-0 z-0 hero-glow"></div>
-<div class="relative z-20 text-center max-w-4xl mx-auto">
-<h1 class="text-6xl md:text-8xl font-extrabold text-white tracking-tight mb-8 leading-[0.9] text-balance">
-                Compute at the <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-container to-secondary">velocity of light.</span>
-</h1>
-<p class="text-lg md:text-2xl text-on-surface-variant max-w-2xl mx-auto mb-12 font-medium text-balance">
-                Sylk is the kinetic engine for modern applications. Deploy globally in seconds with absolute zero infrastructure management.
-            </p>
-<div class="flex flex-col sm:flex-row gap-5 justify-center items-center">
-<button class="bg-white text-black text-lg font-bold px-12 py-4 rounded-full hover:shadow-[0_0_40px_rgba(255,255,255,0.2)] transition-all flex items-center gap-2" onclick="location.href='deploy.html'">
-                    Deploy Session
-                </button>
-<button class="bg-surface-container-high text-white text-lg font-semibold px-12 py-4 rounded-full border border-white/10 hover:bg-surface-bright transition-all">
-                    Documentation
-                </button>
-</div>
-</div>
-<!-- Integrated Drop Zone -->
-<div class="relative z-20 w-full max-w-3xl mt-24">
-<div class="drop-zone-border p-12 rounded-2xl flex flex-col items-center justify-center gap-4 bg-surface-container-lowest/50 backdrop-blur-sm group cursor-pointer hover:bg-surface-container-low/50 transition-all">
-<div class="w-16 h-16 rounded-2xl bg-primary-container/10 flex items-center justify-center text-primary mb-2 group-hover:scale-110 transition-transform">
-<span class="material-symbols-outlined text-4xl">upload_file</span>
-</div>
-<h3 class="text-xl font-bold text-white">Drop your function here</h3>
-<p class="text-on-surface-variant text-sm">or click to browse your local repository</p>
-<div class="mt-4 flex items-center gap-3 text-[10px] font-label tracking-widest uppercase text-outline">
-<span>Node.js</span>
-<span class="w-1 h-1 bg-outline rounded-full"></span>
-<span>Python</span>
-<span class="w-1 h-1 bg-outline rounded-full"></span>
-<span>Rust</span>
-<span class="w-1 h-1 bg-outline rounded-full"></span>
-<span>Go</span>
-</div>
-</div>
-</div>
-</header>
-<!-- Global Edge Network Section -->
-<section class="py-32 px-8 bg-surface border-y border-white/5">
-<div class="max-w-7xl mx-auto">
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-<div>
-<span class="font-label text-primary text-xs uppercase tracking-widest font-bold mb-6 block">Infrastructure</span>
-<h2 class="text-5xl font-bold text-white mb-8 tracking-tight">Global Edge Network.</h2>
-<p class="text-xl text-on-surface-variant leading-relaxed mb-10">
-                        Your code resides on every continent, served from over 280 edge locations. We ensure 15ms median latency by routing traffic to the closest compute node automatically.
-                    </p>
-<div class="grid grid-cols-2 gap-8">
-<div>
-<div class="text-3xl font-bold text-white mb-1">15ms</div>
-<div class="text-sm text-on-surface-variant uppercase tracking-wider font-label">Avg Latency</div>
-</div>
-<div>
-<div class="text-3xl font-bold text-white mb-1">280+</div>
-<div class="text-sm text-on-surface-variant uppercase tracking-wider font-label">Edge Nodes</div>
-</div>
-</div>
-</div>
-<div class="relative">
-<div class="aspect-square glass-card rounded-3xl p-1 flex items-center justify-center overflow-hidden">
-<!-- Abstract World Representation -->
-<div class="w-full h-full relative bg-black rounded-[1.4rem] overflow-hidden">
-<img alt="Network Mesh" class="w-full h-full object-cover opacity-40" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4HPWE5s_tBU-2RiXuWrOrbvSu57XUaE-AJMCYL8DAALhtyzyZNlqiL8qgZLVRjds5x5pC7N_RmgqsKP6Ky4JiybgQqazd24VlEns2L_njTSksXqZ_5MHCeeXBAhxX6UMN1ooP--KJCVdT27fw4zVfLBoySYNIBmbHAGN_-yOosUrZgkVWMiV886LKw5HZKXlpqA3wGCyXKKBGVhPU1RT1DJ1TKe7UpEaMpPQErWO37ozj_pkJMpUbasYvRWV-Q0lXa7bGedzOVL8"/>
-<div class="absolute inset-0 flex items-center justify-center">
-<div class="w-32 h-32 border border-primary/40 rounded-full animate-ping"></div>
-<div class="w-4 h-4 bg-primary rounded-full shadow-[0_0_20px_#d2bbff]"></div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
-<!-- Instant Scalability Section -->
-<section class="py-32 px-8 bg-black">
-<div class="max-w-7xl mx-auto">
-<div class="text-center mb-20">
-<span class="font-label text-secondary text-xs uppercase tracking-widest font-bold mb-6 block">Performance</span>
-<h2 class="text-5xl font-bold text-white tracking-tight">Instant Scalability.</h2>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-<!-- Card 1 -->
-<div class="p-8 rounded-2xl bg-surface-container-low border border-white/5 hover:border-white/10 transition-all flex flex-col justify-between h-[400px]">
-<div>
-<span class="material-symbols-outlined text-secondary text-3xl mb-6">bolt</span>
-<h3 class="text-2xl font-bold text-white mb-4">Zero Cold Starts</h3>
-<p class="text-on-surface-variant leading-relaxed">Our kinetic substrate keeps your functions warm without the overhead of dedicated instances.</p>
-</div>
-<div class="h-24 flex items-end gap-1">
-<div class="flex-1 bg-secondary/10 h-1/4 rounded-t"></div>
-<div class="flex-1 bg-secondary/20 h-2/4 rounded-t"></div>
-<div class="flex-1 bg-secondary/30 h-1/4 rounded-t"></div>
-<div class="flex-1 bg-secondary/40 h-3/4 rounded-t"></div>
-<div class="flex-1 bg-secondary h-full rounded-t"></div>
-</div>
-</div>
-<!-- Card 2 -->
-<div class="p-8 rounded-2xl bg-surface-container-low border border-white/5 hover:border-white/10 transition-all flex flex-col justify-between h-[400px]">
-<div>
-<span class="material-symbols-outlined text-primary text-3xl mb-6">auto_awesome_motion</span>
-<h3 class="text-2xl font-bold text-white mb-4">Elastic Load</h3>
-<p class="text-on-surface-variant leading-relaxed">From 1 to 1,000,000 requests per second in a heartbeat. No configuration required.</p>
-</div>
-<div class="relative h-24 flex items-center justify-center">
-<div class="w-16 h-16 border-2 border-primary/20 rounded-full flex items-center justify-center">
-<div class="w-8 h-8 bg-primary rounded-full animate-pulse"></div>
-</div>
-</div>
-</div>
-<!-- Card 3 -->
-<div class="p-8 rounded-2xl bg-surface-container-low border border-white/5 hover:border-white/10 transition-all flex flex-col justify-between h-[400px]">
-<div>
-<span class="material-symbols-outlined text-white text-3xl mb-6">monitoring</span>
-<h3 class="text-2xl font-bold text-white mb-4">Deep Insights</h3>
-<p class="text-on-surface-variant leading-relaxed">Real-time observability into every execution. Track performance at a granular level.</p>
-</div>
-<div class="space-y-3">
-<div class="h-1 bg-white/5 rounded-full overflow-hidden"><div class="h-full bg-white w-2/3"></div></div>
-<div class="h-1 bg-white/5 rounded-full overflow-hidden"><div class="h-full bg-white w-4/5"></div></div>
-<div class="h-1 bg-white/5 rounded-full overflow-hidden"><div class="h-full bg-white w-1/2"></div></div>
-</div>
-</div>
-</div>
-</div>
-</section>
-<!-- Logo Cloud -->
-<section class="py-32 px-8 bg-surface">
-<div class="max-w-7xl mx-auto text-center">
-<h2 class="text-sm font-label uppercase tracking-[0.3em] text-outline mb-16">Trusted by industry leaders</h2>
-<div class="flex flex-wrap justify-center items-center gap-16 md:gap-24 opacity-30 grayscale contrast-125">
-<span class="text-3xl font-bold font-headline tracking-tighter">LINEAR</span>
-<span class="text-3xl font-bold font-headline tracking-tighter">RAYCAST</span>
-<span class="text-3xl font-bold font-headline tracking-tighter">STRIPE</span>
-<span class="text-3xl font-bold font-headline tracking-tighter">ARC</span>
-<span class="text-3xl font-bold font-headline tracking-tighter">VERCEL</span>
-</div>
-</div>
-</section>
-<!-- Footer -->
-<footer class="bg-black border-t border-white/5 w-full py-20 px-12">
-<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12">
-<div class="flex flex-col gap-6">
-<span class="text-3xl font-bold tracking-tighter text-white font-headline">Sylk</span>
-<p class="max-w-xs text-on-surface-variant text-sm leading-relaxed">The global compute platform for high-performance applications. Engineered for the next generation of the web.</p>
-<div class="flex gap-4">
-<a class="p-2.5 bg-surface-container-high rounded-full text-white hover:bg-white hover:text-black transition-all" href="#">
-<svg class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path></svg>
-</a>
-<a class="p-2.5 bg-surface-container-high rounded-full text-white hover:bg-white hover:text-black transition-all" href="#">
-<svg class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.84 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"></path></svg>
-</a>
-</div>
-</div>
-<div class="grid grid-cols-2 sm:grid-cols-3 gap-16">
-<div class="flex flex-col gap-4">
-<span class="text-white font-bold text-sm tracking-tight">Product</span>
-<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Features</a>
-<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Integrations</a>
-<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Pricing</a>
-<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Changelog</a>
-</div>
-<div class="flex flex-col gap-4">
-<span class="text-white font-bold text-sm tracking-tight">Resources</span>
-<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Documentation</a>
-<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Guides</a>
-<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">API Reference</a>
-<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Status</a>
-</div>
-<div class="flex flex-col gap-4">
-<span class="text-white font-bold text-sm tracking-tight">Legal</span>
-<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Privacy Policy</a>
-<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Terms of Service</a>
-<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Cookie Policy</a>
-</div>
-</div>
-</div>
-<div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
-<p class="font-['Space_Grotesk'] text-[0.7rem] uppercase tracking-widest text-outline">© 2024 Sylk Kinetic Systems Inc.</p>
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-<span class="text-[0.7rem] font-['Space_Grotesk'] uppercase tracking-widest text-outline">All Systems Operational</span>
-</div>
-</div>
-</footer>
-<script>
-=======
   <!-- TopNavBar -->
   <nav class="fixed top-0 w-full z-[100] bg-black/60 backdrop-blur-xl border-b border-white/5">
     <div class="flex items-center justify-between px-8 py-4 max-w-7xl mx-auto">
       <div class="flex items-center gap-10">
-        <span class="text-2xl font-bold tracking-tighter text-white font-headline">Sylk</span>
+        <span class="text-2xl font-bold tracking-tighter text-white font-headline cursor-pointer" onclick="location.href='index.html'">Sylk</span>
         <div class="hidden md:flex gap-8 items-center">
-          <a class="text-white font-medium text-sm tracking-tight" href="auth.html">Deploy</a>
-          <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight"
-            href="logs.html">Projects</a>
-          <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight"
-            href="logs.html">Logs</a>
-          <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight"
-            href="metrics.html">Usage</a>
+          <a class="text-white font-medium text-sm tracking-tight border-b-2 border-primary pb-1" href="index.html">Home</a>
+          <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="deploy.html">Deploy</a>
+          <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="projects.html">Projects</a>
+          <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="logs.html">Logs</a>
+          <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="metrics.html">Usage</a>
         </div>
       </div>
       <div class="flex items-center gap-6">
         <div class="hidden lg:flex items-center bg-surface-container-low px-3 py-1.5 rounded-lg border border-white/5">
           <span class="material-symbols-outlined text-sm text-outline mr-2">search</span>
-          <input class="bg-transparent border-none text-xs focus:ring-0 w-40 text-on-surface" placeholder="Search..."
-            type="text" />
-          <span
-            class="text-[10px] text-outline bg-surface-container-high px-1.5 py-0.5 rounded border border-white/10 ml-2">⌘K</span>
+          <input class="bg-transparent border-none text-xs focus:ring-0 w-40 text-on-surface" placeholder="Search..." type="text"/>
+          <span class="text-[10px] text-outline bg-surface-container-high px-1.5 py-0.5 rounded border border-white/10 ml-2">⌘K</span>
         </div>
-        <button
-          class="material-symbols-outlined text-on-surface-variant hover:text-white transition-colors">notifications</button>
-        <button
-          class="bg-white text-black px-5 py-2 rounded-full text-sm font-semibold hover:bg-white/90 transition-all active:scale-95"
-          onclick="location.href='auth.html'">Ship Code</button>
+        <button class="material-symbols-outlined text-on-surface-variant hover:text-white transition-colors">notifications</button>
+        <button class="bg-white text-black px-6 py-2 rounded-full text-sm font-bold hover:bg-white/90 transition-all active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.1)]" onclick="location.href='auth.html'">Login / Sign Up</button>
       </div>
     </div>
   </nav>
+
   <!-- Massive Centered Hero Section with Background Monolith -->
   <header class="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-20 px-8 overflow-hidden">
     <!-- Background Monolith Container -->
     <div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none opacity-40">
       <div class="relative w-full h-full max-w-6xl monolith-blob animate-slow-pulse" id="monolith-container">
-        <!-- High-fidelity 3D Abstract Fluid representation from Image 11 -->
         <div class="absolute inset-0 flex items-center justify-center">
-          <img alt="Abstract Monolith" class="w-full h-full object-contain mix-blend-screen"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhI2v3oi8jL0-yHQdfrbpJmCYtwsUe4laPUTYycPV7ZawmBdYrTK3So1UVC2ZhbZKnFl9Q8LAPfigzKs9N-sI1Amwt5dPawU-hWT6mrQInKLMkSZLr2ukLgQh6kSNqZiE6V4tU6aAOX5NDF31j0Y9k3pkxg6HCXMTqZdqRpJf8dDzyPhHp_JHs0P-1SQW0_AlfAW75orCu1CSCUdqBKEJRI48jKYim0WEHpc_YmsxVaRpYwGjPlgKmLM3mJdxpsk_wsJHPs3nztkk" />
+          <img alt="Abstract Monolith" class="w-full h-full object-contain mix-blend-screen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhI2v3oi8jL0-yHQdfrbpJmCYtwsUe4laPUTYycPV7ZawmBdYrTK3So1UVC2ZhbZKnFl9Q8LAPfigzKs9N-sI1Amwt5dPawU-hWT6mrQInKLMkSZLr2ukLgQh6kSNqZiE6V4tU6aAOX5NDF31j0Y9k3pkxg6HCXMTqZdqRpJf8dDzyPhHp_JHs0P-1SQW0_AlfAW75orCu1CSCUdqBKEJRI48jKYim0WEHpc_YmsxVaRpYwGjPlgKmLM3mJdxpsk_wsJHPs3nztkk"/>
         </div>
-        <!-- Deep Violet Glows -->
-        <div
-          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-radial-gradient from-primary/20 via-transparent to-transparent blur-[120px]">
-        </div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-radial-gradient from-primary/20 via-transparent to-transparent blur-[120px]"></div>
       </div>
     </div>
     <div class="absolute inset-0 z-0 hero-glow"></div>
     <div class="relative z-20 text-center max-w-4xl mx-auto">
       <h1 class="text-6xl md:text-8xl font-extrabold text-white tracking-tight mb-8 leading-[0.9] text-balance">
-        Compute at the <span
-          class="bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-container to-secondary">velocity
-          of light.</span>
+        Compute at the <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-container to-secondary">velocity of light.</span>
       </h1>
       <p class="text-lg md:text-2xl text-on-surface-variant max-w-2xl mx-auto mb-12 font-medium text-balance">
-        Sylk is the kinetic engine for modern applications. Deploy globally in seconds with absolute zero infrastructure
-        management.
+        Sylk is the kinetic engine for modern applications. Deploy globally in seconds with absolute zero infrastructure management.
       </p>
       <div class="flex flex-col sm:flex-row gap-5 justify-center items-center">
-        <button
-          class="bg-white text-black text-lg font-bold px-12 py-4 rounded-full hover:shadow-[0_0_40px_rgba(255,255,255,0.2)] transition-all flex items-center gap-2"
-          onclick="location.href='auth.html'">
-          Start Deploying
+        <button class="bg-white text-black text-lg font-bold px-12 py-4 rounded-full hover:shadow-[0_0_40px_rgba(255,255,255,0.2)] transition-all flex items-center gap-2" onclick="location.href='deploy.html'">
+          Deploy Session
         </button>
-        <button
-          class="bg-surface-container-high text-white text-lg font-semibold px-12 py-4 rounded-full border border-white/10 hover:bg-surface-bright transition-all">
+        <button class="bg-surface-container-high text-white text-lg font-semibold px-12 py-4 rounded-full border border-white/10 hover:bg-surface-bright transition-all">
           Documentation
         </button>
       </div>
     </div>
+
     <!-- Integrated Drop Zone -->
     <div class="relative z-20 w-full max-w-3xl mt-24">
       <input type="file" id="file-input" class="hidden" accept=".py,.js,.go,.rs" />
-      <div id="drop-zone"
-        class="drop-zone-border p-12 rounded-2xl flex flex-col items-center justify-center gap-4 bg-surface-container-lowest/50 backdrop-blur-sm group cursor-pointer hover:bg-surface-container-low/50 transition-all">
-        <div
-          class="w-16 h-16 rounded-2xl bg-primary-container/10 flex items-center justify-center text-primary mb-2 group-hover:scale-110 transition-transform">
+      <div id="drop-zone" class="drop-zone-border p-12 rounded-2xl flex flex-col items-center justify-center gap-4 bg-surface-container-lowest/50 backdrop-blur-sm group cursor-pointer hover:bg-surface-container-low/50 transition-all">
+        <div class="w-16 h-16 rounded-2xl bg-primary-container/10 flex items-center justify-center text-primary mb-2 group-hover:scale-110 transition-transform">
           <span class="material-symbols-outlined text-4xl">upload_file</span>
         </div>
         <h3 id="drop-title" class="text-xl font-bold text-white">Drop your function here</h3>
@@ -451,17 +201,16 @@
       </div>
     </div>
   </header>
+
   <!-- Global Edge Network Section -->
   <section class="py-32 px-8 bg-surface border-y border-white/5">
     <div class="max-w-7xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
         <div>
-          <span
-            class="font-label text-primary text-xs uppercase tracking-widest font-bold mb-6 block">Infrastructure</span>
+          <span class="font-label text-primary text-xs uppercase tracking-widest font-bold mb-6 block">Infrastructure</span>
           <h2 class="text-5xl font-bold text-white mb-8 tracking-tight">Global Edge Network.</h2>
           <p class="text-xl text-on-surface-variant leading-relaxed mb-10">
-            Your code resides on every continent, served from over 280 edge locations. We ensure 15ms median latency by
-            routing traffic to the closest compute node automatically.
+            Your code resides on every continent, served from over 280 edge locations. We ensure 15ms median latency by routing traffic to the closest compute node automatically.
           </p>
           <div class="grid grid-cols-2 gap-8">
             <div>
@@ -476,10 +225,8 @@
         </div>
         <div class="relative">
           <div class="aspect-square glass-card rounded-3xl p-1 flex items-center justify-center overflow-hidden">
-            <!-- Abstract World Representation -->
             <div class="w-full h-full relative bg-black rounded-[1.4rem] overflow-hidden">
-              <img alt="Network Mesh" class="w-full h-full object-cover opacity-40"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4HPWE5s_tBU-2RiXuWrOrbvSu57XUaE-AJMCYL8DAALhtyzyZNlqiL8qgZLVRjds5x5pC7N_RmgqsKP6Ky4JiybgQqazd24VlEns2L_njTSksXqZ_5MHCeeXBAhxX6UMN1ooP--KJCVdT27fw4zVfLBoySYNIBmbHAGN_-yOosUrZgkVWMiV886LKw5HZKXlpqA3wGCyXKKBGVhPU1RT1DJ1TKe7UpEaMpPQErWO37ozj_pkJMpUbasYvRWV-Q0lXa7bGedzOVL8" />
+              <img alt="Network Mesh" class="w-full h-full object-cover opacity-40" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4HPWE5s_tBU-2RiXuWrOrbvSu57XUaE-AJMCYL8DAALhtyzyZNlqiL8qgZLVRjds5x5pC7N_RmgqsKP6Ky4JiybgQqazd24VlEns2L_njTSksXqZ_5MHCeeXBAhxX6UMN1ooP--KJCVdT27fw4zVfLBoySYNIBmbHAGN_-yOosUrZgkVWMiV886LKw5HZKXlpqA3wGCyXKKBGVhPU1RT1DJ1TKe7UpEaMpPQErWO37ozj_pkJMpUbasYvRWV-Q0lXa7bGedzOVL8"/>
               <div class="absolute inset-0 flex items-center justify-center">
                 <div class="w-32 h-32 border border-primary/40 rounded-full animate-ping"></div>
                 <div class="w-4 h-4 bg-primary rounded-full shadow-[0_0_20px_#d2bbff]"></div>
@@ -490,146 +237,37 @@
       </div>
     </div>
   </section>
-  <!-- Instant Scalability Section -->
-  <section class="py-32 px-8 bg-black">
-    <div class="max-w-7xl mx-auto">
-      <div class="text-center mb-20">
-        <span
-          class="font-label text-secondary text-xs uppercase tracking-widest font-bold mb-6 block">Performance</span>
-        <h2 class="text-5xl font-bold text-white tracking-tight">Instant Scalability.</h2>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Card 1 -->
-        <div
-          class="p-8 rounded-2xl bg-surface-container-low border border-white/5 hover:border-white/10 transition-all flex flex-col justify-between h-[400px]">
-          <div>
-            <span class="material-symbols-outlined text-secondary text-3xl mb-6">bolt</span>
-            <h3 class="text-2xl font-bold text-white mb-4">Zero Cold Starts</h3>
-            <p class="text-on-surface-variant leading-relaxed">Our kinetic substrate keeps your functions warm without
-              the overhead of dedicated instances.</p>
-          </div>
-          <div class="h-24 flex items-end gap-1">
-            <div class="flex-1 bg-secondary/10 h-1/4 rounded-t"></div>
-            <div class="flex-1 bg-secondary/20 h-2/4 rounded-t"></div>
-            <div class="flex-1 bg-secondary/30 h-1/4 rounded-t"></div>
-            <div class="flex-1 bg-secondary/40 h-3/4 rounded-t"></div>
-            <div class="flex-1 bg-secondary h-full rounded-t"></div>
-          </div>
-        </div>
-        <!-- Card 2 -->
-        <div
-          class="p-8 rounded-2xl bg-surface-container-low border border-white/5 hover:border-white/10 transition-all flex flex-col justify-between h-[400px]">
-          <div>
-            <span class="material-symbols-outlined text-primary text-3xl mb-6">auto_awesome_motion</span>
-            <h3 class="text-2xl font-bold text-white mb-4">Elastic Load</h3>
-            <p class="text-on-surface-variant leading-relaxed">From 1 to 1,000,000 requests per second in a heartbeat.
-              No configuration required.</p>
-          </div>
-          <div class="relative h-24 flex items-center justify-center">
-            <div class="w-16 h-16 border-2 border-primary/20 rounded-full flex items-center justify-center">
-              <div class="w-8 h-8 bg-primary rounded-full animate-pulse"></div>
-            </div>
-          </div>
-        </div>
-        <!-- Card 3 -->
-        <div
-          class="p-8 rounded-2xl bg-surface-container-low border border-white/5 hover:border-white/10 transition-all flex flex-col justify-between h-[400px]">
-          <div>
-            <span class="material-symbols-outlined text-white text-3xl mb-6">monitoring</span>
-            <h3 class="text-2xl font-bold text-white mb-4">Deep Insights</h3>
-            <p class="text-on-surface-variant leading-relaxed">Real-time observability into every execution. Track
-              performance at a granular level.</p>
-          </div>
-          <div class="space-y-3">
-            <div class="h-1 bg-white/5 rounded-full overflow-hidden">
-              <div class="h-full bg-white w-2/3"></div>
-            </div>
-            <div class="h-1 bg-white/5 rounded-full overflow-hidden">
-              <div class="h-full bg-white w-4/5"></div>
-            </div>
-            <div class="h-1 bg-white/5 rounded-full overflow-hidden">
-              <div class="h-full bg-white w-1/2"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-  <!-- Logo Cloud -->
-  <section class="py-32 px-8 bg-surface">
-    <div class="max-w-7xl mx-auto text-center">
-      <h2 class="text-sm font-label uppercase tracking-[0.3em] text-outline mb-16">Trusted by industry leaders</h2>
-      <div class="flex flex-wrap justify-center items-center gap-16 md:gap-24 opacity-30 grayscale contrast-125">
-        <span class="text-3xl font-bold font-headline tracking-tighter">LINEAR</span>
-        <span class="text-3xl font-bold font-headline tracking-tighter">RAYCAST</span>
-        <span class="text-3xl font-bold font-headline tracking-tighter">STRIPE</span>
-        <span class="text-3xl font-bold font-headline tracking-tighter">ARC</span>
-        <span class="text-3xl font-bold font-headline tracking-tighter">VERCEL</span>
-      </div>
-    </div>
-  </section>
+
   <!-- Footer -->
   <footer class="bg-black border-t border-white/5 w-full py-20 px-12">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12">
       <div class="flex flex-col gap-6">
         <span class="text-3xl font-bold tracking-tighter text-white font-headline">Sylk</span>
-        <p class="max-w-xs text-on-surface-variant text-sm leading-relaxed">The global compute platform for
-          high-performance applications. Engineered for the next generation of the web.</p>
-        <div class="flex gap-4">
-          <a class="p-2.5 bg-surface-container-high rounded-full text-white hover:bg-white hover:text-black transition-all"
-            href="#">
-            <svg class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24">
-              <path
-                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z">
-              </path>
-            </svg>
-          </a>
-          <a class="p-2.5 bg-surface-container-high rounded-full text-white hover:bg-white hover:text-black transition-all"
-            href="#">
-            <svg class="w-5 h-5" fill="currentColor" viewbox="0 0 24 24">
-              <path
-                d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.84 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z">
-              </path>
-            </svg>
-          </a>
-        </div>
+        <p class="max-w-xs text-on-surface-variant text-sm leading-relaxed">The global compute platform for high-performance applications. Engineered for the next generation of the web.</p>
       </div>
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-16">
         <div class="flex flex-col gap-4">
           <span class="text-white font-bold text-sm tracking-tight">Product</span>
           <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Features</a>
           <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Integrations</a>
-          <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Pricing</a>
-          <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Changelog</a>
         </div>
         <div class="flex flex-col gap-4">
           <span class="text-white font-bold text-sm tracking-tight">Resources</span>
           <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Documentation</a>
           <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Guides</a>
-          <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">API Reference</a>
-          <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Status</a>
-        </div>
-        <div class="flex flex-col gap-4">
-          <span class="text-white font-bold text-sm tracking-tight">Legal</span>
-          <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Privacy Policy</a>
-          <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Terms of Service</a>
-          <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Cookie Policy</a>
         </div>
       </div>
     </div>
-    <div
-      class="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
-      <p class="font-['Space_Grotesk'] text-[0.7rem] uppercase tracking-widest text-outline">© 2024 Sylk Kinetic Systems
-        Inc.</p>
+    <div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <p class="font-['Space_Grotesk'] text-[0.7rem] uppercase tracking-widest text-outline">© 2024 Sylk Kinetic Systems Inc.</p>
       <div class="flex items-center gap-2">
         <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-        <span class="text-[0.7rem] font-['Space_Grotesk'] uppercase tracking-widest text-outline">All Systems
-          Operational</span>
+        <span class="text-[0.7rem] font-['Space_Grotesk'] uppercase tracking-widest text-outline">All Systems Operational</span>
       </div>
     </div>
   </footer>
+
   <script>
->>>>>>> 1008657 (Backend for platform)
     window.addEventListener('scroll', () => {
       const scrolled = window.scrollY;
       const monolith = document.getElementById('monolith-container');
@@ -638,7 +276,6 @@
         const translateY = scrolled * 0.15;
         const rotate = scrolled * 0.02;
         const opacity = Math.max(0.1, 0.4 - scrolled * 0.0005);
-
         monolith.style.transform = `scale(${scale}) translateY(${translateY}px) rotate(${rotate}deg)`;
         monolith.style.opacity = opacity;
       }
@@ -652,7 +289,6 @@
 
     if (dropZone && fileInput) {
       dropZone.addEventListener('click', () => fileInput.click());
-
       ['dragover', 'dragleave', 'drop'].forEach(e => {
         dropZone.addEventListener(e, (ev) => {
           ev.preventDefault();
@@ -660,14 +296,8 @@
         });
       });
 
-      dropZone.addEventListener('dragover', () => {
-        dropZone.classList.add('bg-primary/20', 'border-primary/50');
-      });
-
-      dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('bg-primary/20', 'border-primary/50');
-      });
-
+      dropZone.addEventListener('dragover', () => dropZone.classList.add('bg-primary/20', 'border-primary/50'));
+      dropZone.addEventListener('dragleave', () => dropZone.classList.remove('bg-primary/20', 'border-primary/50'));
       dropZone.addEventListener('drop', (e) => {
         dropZone.classList.remove('bg-primary/20', 'border-primary/50');
         const files = e.dataTransfer.files;
@@ -681,20 +311,17 @@
 
     async function handleFile(file) {
       dropTitle.textContent = "Deploying...";
-      dropTitle.className = "text-xl font-bold text-white"; // reset colors
+      dropTitle.className = "text-xl font-bold text-white";
       dropDesc.textContent = `Reading ${file.name}`;
 
       const reader = new FileReader();
       reader.onload = async (e) => {
         const code = e.target.result;
         try {
-          // Using hardware_pref default for frontend deployments 
           const res = await SylkAPI.submitTask(code, "default");
           dropTitle.textContent = "Deployed Successfully!";
           dropTitle.classList.add("text-secondary");
           dropDesc.textContent = `Task ID: ${res.task_id}`;
-
-          // Redirect to logs to see it run
           setTimeout(() => {
             window.location.href = `logs.html?task=${res.task_id}`;
           }, 1500);
@@ -708,5 +335,4 @@
     }
   </script>
 </body>
-
 </html>
