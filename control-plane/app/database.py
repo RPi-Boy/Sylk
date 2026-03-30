@@ -4,7 +4,11 @@ from sqlalchemy.orm import sessionmaker
 import enum
 import datetime
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./sylk_analytics.db"
+import os
+
+_data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+os.makedirs(_data_dir, exist_ok=True)
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{os.path.join(_data_dir, 'sylk_analytics.db')}"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}

@@ -216,6 +216,11 @@
                                 </div>
                                 <span id="editor-filename"
                                     class="font-label text-[0.7rem] text-outline uppercase tracking-[0.2em] ml-4">main.js</span>
+                                <div class="ml-6 flex items-center gap-2 group">
+                                    <span class="text-[9px] text-outline/50 font-label uppercase font-bold tracking-widest group-focus-within:text-primary transition-colors">Slug:</span>
+                                    <input id="func-slug" type="text" placeholder="e.g. hello-world" 
+                                           class="bg-transparent border-b border-white/10 px-2 py-0.5 text-[11px] text-white outline-none focus:border-primary transition-all w-32 font-mono">
+                                </div>
                             </div>
                             <div id="lang-tabs"
                                 class="flex items-center gap-3 text-[10px] font-label font-bold uppercase tracking-widest text-outline">
@@ -227,11 +232,14 @@
                             <textarea id="code-editor"
                                 class="w-full h-full min-h-[380px] bg-transparent text-on-surface font-mono text-sm leading-loose p-10 resize-none outline-none custom-scrollbar"
                                 spellcheck="false"
-                                placeholder="Write your code here...">export default async function (req) {
-    const { searchParams } = new URL(req.url);
-    const name = searchParams.get('name') || 'World';
-    return new Response(`Hello, ${name}!`);
-}</textarea>
+                                placeholder="Write your code here...">const a = params.a || 0;
+const b = params.b || 0;
+
+const sum = a + b;
+const product = a * b;
+const power = Math.pow(a, b);
+
+console.log(JSON.stringify({ sum, product, power }));</textarea>
                         </div>
                         <div class="px-8 py-6 border-t border-white/5 flex justify-between items-center bg-black/40">
                             <p id="deploy-status" class="text-xs text-on-surface-variant font-medium">Ready to deploy</p>
@@ -270,8 +278,21 @@
                         <div class="absolute -right-12 -top-12 w-48 h-48 bg-primary/5 blur-3xl rounded-full"></div>
                     </div>
                     <!-- Recent Activity Card -->
+                    <div id="active-function-card" class="bg-surface-container-low rounded-2xl p-8 border border-white/5 flex flex-col gap-6 hidden">
+                        <p class="font-label text-[0.65rem] uppercase tracking-[0.3em] text-primary font-bold">Active Deployment</p>
+                        <div class="space-y-4">
+                            <div>
+                                <p id="sidebar-slug" class="text-sm font-bold text-white">---</p>
+                                <p id="sidebar-endpoint" class="text-[0.65rem] text-on-surface-variant font-mono mt-1 break-all">---</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <span class="px-2 py-0.5 bg-green-500/20 text-green-400 text-[8px] font-bold rounded uppercase">Global</span>
+                                <span class="px-2 py-0.5 bg-primary/20 text-primary text-[8px] font-bold rounded uppercase">Active</span>
+                            </div>
+                        </div>
+                    </div>
                     <div
-                        class="bg-surface-container-low rounded-2xl p-8 border border-white/5 flex flex-col gap-6 flex-grow">
+                        class="bg-surface-container-low rounded-2xl p-8 border border-white/5 flex flex-col gap-6 flex-grow overflow-y-auto">
                         <p class="font-label text-[0.65rem] uppercase tracking-[0.3em] text-outline font-bold">Recent
                             Deployments</p>
                         <div class="space-y-6">
@@ -334,6 +355,40 @@
                     </div>
                 </div>
             </div>
+            <!-- Deployment Modal Overlay -->
+            <div id="deploy-modal" class="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+                <div class="bg-surface-container-low border border-white/10 w-full max-w-lg p-10 rounded-3xl shadow-[0_0_100px_rgba(124,58,237,0.2)] scale-95 transition-transform duration-300 transform" id="modal-content">
+                    <div class="flex justify-between items-start mb-8">
+                        <div>
+                            <h2 class="text-3xl font-bold font-headline text-white mb-2">API Ready.</h2>
+                            <p class="text-on-surface-variant text-sm">Your function is live across 280 global nodes.</p>
+                        </div>
+                        <button onclick="closeModal()" class="p-2 hover:bg-white/5 rounded-full text-outline-variant hover:text-white transition-all">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="p-5 bg-white/5 border border-white/5 rounded-2xl">
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-outline mb-3">Endpoint URL</p>
+                            <div class="flex items-center justify-between gap-4">
+                                <code id="modal-url" class="text-primary text-sm font-mono truncate">---</code>
+                                <button onclick="copyText('modal-url', this)" class="px-3 py-1.5 bg-primary text-black text-[9px] font-bold rounded-lg uppercase hover:bg-white transition-all">Copy</button>
+                            </div>
+                        </div>
+
+                        <div class="p-5 bg-black border border-white/5 rounded-2xl">
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-outline mb-3">Test with CURL</p>
+                            <div class="relative group">
+                                <pre id="modal-curl" class="text-on-surface-variant text-[10px] bg-black p-4 rounded-xl border border-white/5 font-mono whitespace-pre-wrap leading-relaxed select-all">---</pre>
+                                <button onclick="copyText('modal-curl', this)" class="absolute top-2 right-2 p-2 bg-white/5 rounded-lg opacity-0 group-hover:opacity-100 transition-all">
+                                    <span class="material-symbols-outlined text-[14px]">content_copy</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
     </main>
     <footer class="w-full py-16 bg-black border-t border-white/5 mt-12">
@@ -367,8 +422,25 @@
         // --- Language Switching ---
         let currentLang = 'node';
         const defaultCode = {
-            node: `export default async function (req) {\n    const { searchParams } = new URL(req.url);\n    const name = searchParams.get('name') || 'World';\n    return new Response(\`Hello, \${name}!\`);\n}`,
-            python: `import math\n\nresult = sum(range(1, 101))\nprint(f"Sum of 1-100: {result}")\nprint(f"Pi value: {math.pi}")\nprint("Sylk edge compute is alive!")`
+            node: `const a = params.a || 0;
+const b = params.b || 0;
+
+const sum = a + b;
+const product = a * b;
+const power = Math.pow(a, b);
+
+console.log(JSON.stringify({ sum, product, power }));`,
+            python: `import math, json
+
+a = params.get("a", 0)
+b = params.get("b", 0)
+
+result = {
+    "sum": a + b,
+    "product": a * b,
+    "sqrt_a": round(math.sqrt(abs(a)), 4)
+}
+print(json.dumps(result))`
         };
         const filenames = { node: 'main.js', python: 'main.py' };
 
@@ -404,32 +476,102 @@
 
         async function deployCode() {
             const code = document.getElementById('code-editor').value.trim();
+            const slugInput = document.getElementById('func-slug');
             const status = document.getElementById('deploy-status');
             const btn = document.getElementById('deploy-btn');
+            
             if (!code) { status.textContent = 'Error: No code to deploy'; return; }
+            
+            // Random slug if empty
+            let slug = slugInput.value.trim();
+            if (!slug) {
+                slug = `fn-${Math.random().toString(36).substring(2, 8)}`;
+                slugInput.value = slug;
+            }
 
             btn.disabled = true;
             btn.textContent = 'Deploying...';
-            status.textContent = 'Submitting to queue...';
-            logToTerminal('INFO', `Submitting <span class="text-primary font-bold">${filenames[currentLang]}</span> (${currentLang}) to edge mesh`);
+            status.textContent = 'Deploying FaaS Function...';
+            logToTerminal('INFO', `Deploying <span class="text-primary font-bold">${slug}</span> to edge mesh...`);
 
             try {
-                const result = await SylkAPI.submitTask(code, currentLang);
-                if (result && result.task_id) {
-                    status.textContent = `Queued: ${result.task_id.substring(0, 8)}...`;
-                    logToTerminal('SUCCESS', `Task <span class="text-primary font-bold">${result.task_id.substring(0, 8)}</span> queued successfully`);
-                    logToTerminal('INFO', 'Waiting for edge node pickup...');
-                } else {
-                    status.textContent = 'Deploy failed. Check login.';
-                    logToTerminal('ERROR', 'Deploy failed. Are you logged in?');
-                }
+                const result = await SylkAPI.deployFunction(slug, code, currentLang);
+                status.textContent = 'Active: Waiting for calls';
+                logToTerminal('SUCCESS', `Global endpoint established: <span class="text-white font-bold">${result.endpoint}</span>`);
+                showSuccessEndpoint(result.endpoint);
             } catch (e) {
-                status.textContent = 'Network error';
-                logToTerminal('ERROR', `Network error: ${e.message}`);
+                status.textContent = 'Deploy failed';
+                logToTerminal('ERROR', `${e.message}`);
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Deploy Now';
             }
+        }
+
+        function showSuccessEndpoint(endpoint) {
+            const origin = window.location.origin === "null" ? "http://localhost:8000" : window.location.origin;
+            const fullUrl = origin + endpoint;
+            
+            // 1. Log to terminal for history
+            logToTerminal('SUCCESS', `Endpoint active at: ${endpoint}`);
+
+            // 2. Update Sidebar Card
+            const sidebar = document.getElementById('active-function-card');
+            const slug = document.getElementById('func-slug').value || "unnamed";
+            document.getElementById('sidebar-slug').textContent = slug;
+            document.getElementById('sidebar-endpoint').textContent = fullUrl;
+            sidebar.classList.remove('hidden');
+
+            // 3. Trigger Modal
+            const modal = document.getElementById('deploy-modal');
+            const content = document.getElementById('modal-content');
+            document.getElementById('modal-url').textContent = fullUrl;
+            
+            const curlCmd = `curl -X POST ${fullUrl} \\\n     -H "Content-Type: application/json" \\\n     -d '{"params": {"a": 25, "b": 10}}'`;
+            document.getElementById('modal-curl').textContent = curlCmd;
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            }, 10);
+
+            // 4. Also keep the small card in terminal for persistence
+            const div = document.createElement('div');
+            div.className = 'mt-6 p-6 border border-primary/30 bg-primary/5 rounded-xl space-y-4';
+            div.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] uppercase tracking-widest font-bold text-primary">Live API Endpoint</span>
+                </div>
+                <div class="flex items-center justify-between bg-black/40 p-3 rounded-lg border border-white/5 gap-4">
+                    <code class="text-white text-[11px] truncate select-all">${fullUrl}</code>
+                    <button onclick="copyToClipboard('${fullUrl}')" class="flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 rounded-md transition-all group">
+                        <span class="material-symbols-outlined text-sm text-outline">content_copy</span>
+                        <span class="text-[9px] font-bold">Copy</span>
+                    </button>
+                </div>
+            `;
+            termFeed.appendChild(div);
+            termFeed.scrollTop = termFeed.scrollHeight;
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('deploy-modal');
+            modal.classList.remove('opacity-100');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        function copyText(id, btn) {
+            const text = document.getElementById(id).textContent;
+            navigator.clipboard.writeText(text);
+            const original = btn.textContent;
+            btn.textContent = "COPIED";
+            setTimeout(() => btn.textContent = original, 2000);
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
         }
     </script>
 </body>

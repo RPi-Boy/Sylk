@@ -9,12 +9,18 @@ services:
     depends_on:
       - redis
     volumes:
-      # Mount DB file — touch it first on the host if it doesn't exist
-      - ./sylk_analytics.db:/app/sylk_analytics.db
+      - db_data:/app/data
+    labels:
+      - "sylk-type=infrastructure"
     restart: unless-stopped
 
   redis:
     image: "redis:alpine"
     ports:
       - "6379:6379"
+    labels:
+      - "sylk-type=infrastructure"
     restart: unless-stopped
+
+volumes:
+  db_data:

@@ -48,10 +48,13 @@ def reap_zombies():
     try:
         containers = docker_client.containers.list(all=True, filters={"label": "sylk=true"})
         for c in containers:
-            print(f"Removing zombie container: {c.id[:12]}")
+            # Skip if tagged as infrastructure
+            if c.labels.get("sylk-type") == "infrastructure":
+                continue
+            print(f"Reaping zombie: {c.id[:12]}")
             c.remove(force=True)
     except Exception as e:
-        print(f"Error reaping zombies: {e}")
+        print(f"Reap error: {e}")
 
 def start_warm_container(lang="node"):
     # Map 'default' hardware identifier to 'x86' image tag
