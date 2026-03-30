@@ -16,21 +16,28 @@ All pages are fully responsive and feature a unified "Monolith" design system.
 6.  **[Login/Signup (auth.html)](frontend/auth.html)**: Unified entry portal with a seamless client-side toggle between login and onboarding.
 
 ## 🛠️ Key Technical Achievements
+
+### Phase 1 — UI Foundation
 - **Navigation Synchronization**: Implemented an absolute-linked navigation suite across all 6 pages.
-- **Backend API Integration**: 
-  - Integrated **SylkAPI** for authentication, task submission, and analytics.
-  - Implemented **Session** management to handle user tokens and context.
-- **Telemetry System**: 
-  - Wired **EventSource** in `logs.html` for real-time log streaming from the FastAPI backend.
 - **Premium Aesthetics**: Used custom Tailwind configuration for vibrant gradients, backdrop filters, and atmospheric glow effects.
-- **UX Finalization**: 
+- **UX Finalization**:
   - Standardized the **"Login / Sign Up"** action in the top-right.
   - Simplified the **"Deploy Session"** CTA path.
   - Fixed the **Sylk Logo** behavior globally to return to Home.
   - Resolved major merge conflicts and purged duplicated code from the frontend directory.
 
-## 📍 Status: [COMPLETED PHASE 2 - BACKEND INTEGRATION]
-The frontend is now fully integrated with the FastAPI control plane and node mesh.
+### Phase 2 — Backend Integration
+- **SylkAPI Integration**: Wired authentication, task submission, and analytics endpoints.
+- **Session Management**: Implemented `Session` class in `js/session.js` for token persistence via localStorage.
+- **Telemetry System**: Wired `EventSource` in `logs.html` for real-time log streaming from the FastAPI backend.
+
+### Phase 3 — Navigation & Auth Fixes
+- **Tab Button Navigation**: Wired the internal pill-tab buttons in `logs.html` (Logs / Usage / Projects) to their respective pages with `onclick` handlers.
+- **Metrics Card Navigation**: Made all metric cards in `metrics.html` clickable — Avg Latency, Total Tasks, and Error Rate now navigate to `logs.html`.
+- **Session Guard Fix**: Updated `js/session.js` to replace the hardcoded 2-page bypass with a clean `PUBLIC_PAGES` array, making all 6 frontend pages accessible without authentication. Fixes the bug where clicking Logs or Usage redirected unauthenticated users to `auth.html`.
+
+## 📍 Status: [COMPLETED PHASE 3 - NAVIGATION & AUTH FIXES]
+All pages are now fully navigable, publicly accessible, and integrated with the FastAPI control plane.
 
 ---
 *Updated: 2026-03-30*
