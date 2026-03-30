@@ -357,10 +357,14 @@
           appendLog("info", `Task [${shortTaskId}] queued for edge mesh execution (${data.language})`, timeStr);
         } else if (data.event === "task_picked_up") {
           appendLog("metric", `Node ${nodeId} picked up Task [${shortTaskId}]`, timeStr);
+        } else if (data.event === "task_executing") {
+          appendLog("info", `Node ${nodeId} is executing Task [${shortTaskId}] in sandbox...`, timeStr);
         } else if (data.event === "task_completed") {
           appendLog("success", `Node ${nodeId} successfully completed Task [${shortTaskId}]`, timeStr);
+        } else if (data.event === "task_error") {
+          appendLog("error", `Node ${nodeId} error on Task [${shortTaskId}]: ${data.error || 'Unknown error'}`, timeStr);
         } else if (data.event === "task_failed") {
-          appendLog("error", `Node ${nodeId} failed Task [${shortTaskId}]: ${data.error || 'Execution Error'}`, timeStr);
+          appendLog("warn", `Node ${nodeId} failed Task [${shortTaskId}]: ${data.error || 'Execution Error'}`, timeStr);
         }
       });
 

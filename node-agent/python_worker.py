@@ -75,11 +75,13 @@ def execute_task(task):
     container = get_container()
     if not container:
         print(f"No container available for {task_id}")
+        r.publish("sylk_events", json.dumps({"event": "task_error", "task_id": task_id, "node_id": NODE_ID, "error": "No container available"}))
         return False
 
     # Refill pool in background
     threading.Thread(target=fill_pool, daemon=True).start()
     print(f"Executing {task_id} on {container.id[:12]}")
+    r.publish("sylk_events", json.dumps({"event": "task_executing", "task_id": task_id, "node_id": NODE_ID}))
 
     try:
         b64 = base64.b64encode(code.encode()).decode()
@@ -95,16 +97,23 @@ def execute_task(task):
         timer = threading.Timer(60.0, lambda: container.kill())
         timer.start()
         try:
-            _, output = container.exec_run(["python", "-c", script])
+            exit_code, output = container.exec_run(["python3", "-c", script])
             result = output.decode().strip()
             print(f"Result [{task_id}]: {result}")
         finally:
             timer.cancel()
 
+        # Detect OCI / exec errors
+        if "exec failed" in result or "executable file not found" in result:
+            r.publish("sylk_events", json.dumps({"event": "task_error", "task_id": task_id, "node_id": NODE_ID, "error": result[:200]}))
+            r.set(f"result:{task_id}", result, ex=3600)
+            return False
+
         r.set(f"result:{task_id}", result, ex=3600)
         return True
     except Exception as e:
         print(f"Exec failed [{task_id}]: {e}")
+        r.publish("sylk_events", json.dumps({"event": "task_error", "task_id": task_id, "node_id": NODE_ID, "error": str(e)[:200]}))
         return False
     finally:
         container.remove(force=True)

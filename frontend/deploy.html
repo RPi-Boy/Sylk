@@ -368,7 +368,7 @@
         let currentLang = 'node';
         const defaultCode = {
             node: `export default async function (req) {\n    const { searchParams } = new URL(req.url);\n    const name = searchParams.get('name') || 'World';\n    return new Response(\`Hello, \${name}!\`);\n}`,
-            python: `def handler(request):\n    name = request.args.get("name", "World")\n    return f"Hello, {name}!"`
+            python: `import math\n\nresult = sum(range(1, 101))\nprint(f"Sum of 1-100: {result}")\nprint(f"Pi value: {math.pi}")\nprint("Sylk edge compute is alive!")`
         };
         const filenames = { node: 'main.js', python: 'main.py' };
 

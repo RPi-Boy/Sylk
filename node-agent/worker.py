@@ -145,7 +145,7 @@ def execute_task(task_data):
         # We exec a script INSIDE the network-less container to hit localhost:5000
         if language == "python":
             py_script = f"import urllib.request, json, base64; c = base64.b64decode('{b64_code}').decode('utf-8'); d = json.dumps({{'code': c}}).encode('utf-8'); req = urllib.request.Request('http://localhost:5000/exec', data=d, headers={{'Content-Type': 'application/json'}}); print(urllib.request.urlopen(req).read().decode('utf-8'))"
-            exec_command = ["python", "-c", py_script]
+            exec_command = ["python3", "-c", py_script]
         elif language == "node":
             node_script = f"const c = Buffer.from('{b64_code}', 'base64').toString('utf8'); fetch('http://localhost:5000/exec', {{method: 'POST', headers: {{'Content-Type': 'application/json'}}, body: JSON.stringify({{code: c}})}}).then(r=>r.text()).then(console.log);"
             exec_command = ["node", "-e", node_script]
@@ -172,6 +172,11 @@ def execute_task(task_data):
         finally:
             timeout_timer.cancel()
 
+        # Detect OCI / exec errors
+        if "exec failed" in result_str or "executable file not found" in result_str:
+            r.publish("sylk_events", json.dumps({"event": "task_error", "task_id": task_id, "node_id": NODE_ID, "error": result_str[:200]}))
+            r.set(f"result:{task_id}", result_str, ex=3600)
+            return False
         
         # Store result in Redis (Final Acknowledgment)
         r.set(f"result:{task_id}", result_str, ex=3600)
@@ -179,6 +184,7 @@ def execute_task(task_data):
         
     except Exception as e:
         print(f"Execution failed for {task_id}: {e}")
+        r.publish("sylk_events", json.dumps({"event": "task_error", "task_id": task_id, "node_id": NODE_ID, "error": str(e)[:200]}))
         return False
     finally:
         # Containers are effectively single-use for total isolation
