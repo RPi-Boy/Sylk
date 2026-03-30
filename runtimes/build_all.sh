@@ -2,6 +2,11 @@
 # Rebuilds and explicitly tags isolated Multi-Architecture Runtimes for Sylk Edge Mesh
 set -e
 
+# Pre-pull base images to ensure immediate layer availability and caching
+echo "--> Pre-pulling base images"
+docker pull python:3.11-alpine || true
+docker pull node:18-alpine || true
+
 # Python Runtime Tags
 echo "--> Building Python Runtime (x86 & ARM)"
 docker buildx build --platform linux/amd64 -t sylk-python-runtime:x86 --load ./python-runtime

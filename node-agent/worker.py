@@ -148,9 +148,24 @@ def execute_task(task_data):
             container.remove(force=True)
             return False
 
-        exit_code, output = container.exec_run(exec_command)
-        result_str = output.decode("utf-8").strip()
-        print(f"Task {task_id} result: {result_str}")
+        # Enforce 60s task timeout
+        def kill_container():
+            try:
+                print(f"Timeout reached for task {task_id}. Killing container.")
+                container.kill()
+            except Exception:
+                pass
+                
+        timeout_timer = threading.Timer(60.0, kill_container)
+        timeout_timer.start()
+
+        try:
+            exit_code, output = container.exec_run(exec_command)
+            result_str = output.decode("utf-8").strip()
+            print(f"Task {task_id} result: {result_str}")
+        finally:
+            timeout_timer.cancel()
+
         
         # Store result in Redis (Final Acknowledgment)
         r.set(f"result:{task_id}", result_str, ex=3600)

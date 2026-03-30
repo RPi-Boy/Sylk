@@ -4,13 +4,17 @@ import platform
 import psutil
 
 def get_node_info():
+    import os
     arch = platform.machine().lower()
     
-    # Simple heuristic to distinguish GPU/ARM/X86
-    if "arm" in arch or "aarch" in arch:
+    # Mock GPU support based on env variable
+    if os.getenv("MOCK_GPU", "false").lower() == "true":
+        hardware_type = "gpu"
+    elif "arm" in arch or "aarch" in arch:
         hardware_type = "arm"
     else:
         hardware_type = "default"
+
 
 
     return {
