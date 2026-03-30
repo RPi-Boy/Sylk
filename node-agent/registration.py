@@ -4,10 +4,18 @@ import platform
 import psutil
 
 def get_node_info():
+    machine = platform.machine().lower()
+    if 'arm' in machine or 'aarch64' in machine:
+        hw_type = "arm"
+    else:
+        hw_type = "x86"
+
+    # Minimal implementation, a real version might try to detect GPUs via pynvml
+    
     return {
         "node_id": socket.gethostname(),
         "hostname": socket.gethostname(),
-        "hardware_type": "x86", # Auto-detect logic here
+        "hardware_type": hw_type, 
         "cpu_cores": psutil.cpu_count(),
         "memory_mb": int(psutil.virtual_memory().total / (1024 * 1024))
     }

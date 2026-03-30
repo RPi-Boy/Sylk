@@ -6,3 +6,4 @@ redis
 sqlalchemy
 psycopg2-binary
 pydantic-settings
+sse-starlette

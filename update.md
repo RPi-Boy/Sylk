@@ -71,3 +71,8 @@ This document outlines the specific tasks and technical specifications for the D
 4.  **CRIU (Checkpoint/Restore in Userspace)**: Advanced technique to "freeze" a running container once initialized and "thaw" it instantly for new tasks. This could bring spinup times into the low tens of milliseconds.
 5.  **Multi-stage Builds**: Ensure that compilers and build tools (if needed for dependencies) are not present in the final runtime image.
 6.  **Local Image Registry**: Running a local `zot` or `registry:2` on the edge nodes to avoid any network latency during image pulls.
+
+## Siddhant Suggests
+- [ ] **Docker Task Timeout**: The Docker runtime containers should have a maximum execution time (e.g., 60s) to prevent runaway code.
+- [ ] **Image Caching**: Pre-pull the `sylk-runtime` images in the `build_all.sh` script to ensure immediate availability.
+- [ ] **GPU Passthrough**: For the `gpu` runtime, ensure the `Dockerfile` includes CUDA drivers or necessary platform-specific libraries.
