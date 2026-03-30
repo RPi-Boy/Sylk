@@ -168,27 +168,34 @@
       var splashVideo = document.getElementById('splash-video');
       var nav = performance.getEntriesByType('navigation')[0];
       var navType = nav ? nav.type : 'navigate';
-      var ref = document.referrer;
-      var fromInternal = ref && new URL(ref).origin === location.origin
-        && !new URL(ref).pathname.endsWith('index.html');
+      var cameFromPage = sessionStorage.getItem('sylk-nav');
 
-      if (navType !== 'reload' && fromInternal) {
-        // Internal navigation — skip splash entirely
+      // Clear the flag immediately
+      sessionStorage.removeItem('sylk-nav');
+
+      if (navType === 'reload') {
+        // Refresh → always show splash
+        showSplash();
+      } else if (cameFromPage) {
+        // Clicked a link from deploy/logs/projects/etc → skip
         splash.remove();
       } else {
-        // First visit, external link, or refresh — show splash
-        // When the video ends its first play, fade out splash
+        // First visit, bookmark, external link → show splash
+        showSplash();
+      }
+
+      function showSplash() {
         splashVideo.addEventListener('ended', function() {
           splash.style.opacity = '0';
           setTimeout(function() { splash.remove(); }, 800);
         });
-        // Fallback: if video is very short or fails, dismiss after 6s max
+        // Fallback if video fails or is very long
         setTimeout(function() {
           if (document.getElementById('splash-screen')) {
             splash.style.opacity = '0';
             setTimeout(function() { splash.remove(); }, 800);
           }
-        }, 6000);
+        }, 8000);
       }
     })();
   </script>
