@@ -89,7 +89,7 @@ def poll_tasks():
         r.publish("sylk_events", json.dumps(event_picked_up))
 
         success = execute_task(task)
-        
+
         if success:
             event_completed = {"event": "task_completed", "task_id": task.get("task_id"), "node_id": NODE_ID}
             r.publish("sylk_events", json.dumps(event_completed))

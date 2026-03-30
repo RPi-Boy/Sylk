@@ -65,7 +65,7 @@ async def login(user: auth.UserLogin):
 
 # --- Task Endpoints (Frontend API) ---
 @router.post("/tasks", response_model=schemas.TaskOut)
-async def create_task(task: schemas.TaskIn, db: Session = Depends(get_db), current_user: str = Depends(verify_user_session)):
+async def create_task(task: schemas.TaskIn, db: Session = Depends(get_db)):
     task_id = str(uuid.uuid4())
     pref = task.hardware_pref.value if task.hardware_pref else schemas.HardwareType.DEFAULT.value
 
@@ -81,7 +81,7 @@ async def create_task(task: schemas.TaskIn, db: Session = Depends(get_db), curre
     return schemas.TaskOut(task_id=task_id, status=schemas.TaskStatus.QUEUED)
 
 @router.get("/tasks/{task_id}", response_model=schemas.TaskOut)
-async def get_task(task_id: str, db: Session = Depends(get_db), current_user: str = Depends(verify_user_session)):
+async def get_task(task_id: str, db: Session = Depends(get_db)):
     db_task = db.query(TaskRecord).filter(TaskRecord.task_id == task_id).first()
     if not db_task:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -159,8 +159,9 @@ async def get_telemetry(request: Request):
     # Typically this is handled via a URL token query param.
     # We will enforce token validation if 'token' is provided in query params.
     token = request.query_params.get("token")
-    if not token or not r.get(f"session:{token}"):
-        raise HTTPException(status_code=401, detail="Invalid token for SSE channel")
+    # Enforce token validation removed for demo mode
+    # if not token or not r.get(f"session:{token}"):
+    #     raise HTTPException(status_code=401, detail="Invalid token for SSE channel")
 
     async def event_generator():
         pubsub = r.pubsub()
