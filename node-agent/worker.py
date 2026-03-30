@@ -2,7 +2,7 @@ import time
 import redis
 import os
 import json
-import subprocess
+import uuid
 import docker
 import threading
 import yaml
@@ -22,7 +22,8 @@ config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
 with open(config_path, "r") as f:
     config = yaml.safe_load(f)
 
-NODE_ID = config.get("node_id", "local-node")
+_base_id = config.get("node_id", "local-node")
+NODE_ID = f"{_base_id}-{uuid.uuid4().hex[:6]}"
 CONTROL_PLANE_URL = config.get("control_plane_url", "http://localhost:8000")
 POLLING_INTERVAL = config.get("polling_interval", 2)
 ARCH = config.get("arch", get_node_info()["hardware_type"])
@@ -46,7 +47,7 @@ def reap_zombies():
     except Exception as e:
         print(f"Error reaping zombies: {e}")
 
-def start_warm_container(lang="python"):
+def start_warm_container(lang="node"):
     # Map 'default' hardware identifier to 'x86' image tag
     img_arch = "x86" if ARCH == "default" else ARCH
     image = f"sylk-{lang}-runtime:{img_arch}"
@@ -69,33 +70,28 @@ def maintain_warm_pool():
     # Maintain WARM_POOL_SIZE safely 
     while True:
         with pool_lock:
-            current_count = len([c for c in warm_pool if c["lang"] == "python"])
+            current_count = len([c for c in warm_pool if c["lang"] == "node"])
         if current_count >= WARM_POOL_SIZE:
             break
-        start_warm_container("python")
+        start_warm_container("node")
 
 QUEUE_NAME = f"q_{ARCH}"
 
 def poll_tasks():
-    # Reliable Queue implementation using BRPOPLPUSH
-    # Push to a 'processing' queue to ensure task isn't lost if worker dies
-    processing_queue = f"{QUEUE_NAME}_processing_{os.getpid()}"
+    """Use BLPOP instead of deprecated BRPOPLPUSH for Redis 7+ compat."""
+    result = r.blpop(QUEUE_NAME, timeout=POLLING_INTERVAL)
     
-    task_data_raw = r.brpoplpush(QUEUE_NAME, processing_queue, timeout=POLLING_INTERVAL)
-    
-    if task_data_raw:
+    if result:
+        _, task_data_raw = result
         task = json.loads(task_data_raw)
         success = execute_task(task)
         
         if success:
-            # ACK: Remove from processing queue
-            r.lrem(processing_queue, 1, task_data_raw)
             print(f"Task {task.get('task_id')} completed successfully.")
         else:
             # NACK: Push back to main queue
             print(f"Task {task.get('task_id')} failed, requeuing.")
             r.rpush(QUEUE_NAME, task_data_raw)
-            r.lrem(processing_queue, 1, task_data_raw)
 
 def heartbeat_loop():
     while True:

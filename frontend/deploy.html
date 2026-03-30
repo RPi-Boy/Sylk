@@ -214,45 +214,34 @@
                                     <div class="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
                                     <div class="w-3 h-3 rounded-full bg-[#27C93F]"></div>
                                 </div>
-                                <span
+                                <span id="editor-filename"
                                     class="font-label text-[0.7rem] text-outline uppercase tracking-[0.2em] ml-4">main.js</span>
                             </div>
-                            <div
+                            <div id="lang-tabs"
                                 class="flex items-center gap-3 text-[10px] font-label font-bold uppercase tracking-widest text-outline">
-                                <span class="px-3 py-1 bg-white/10 text-white rounded-full">JavaScript</span>
-                                <span
-                                    class="px-3 py-1 hover:bg-white/5 rounded-full cursor-pointer transition-colors">Python</span>
-                                <span
-                                    class="px-3 py-1 hover:bg-white/5 rounded-full cursor-pointer transition-colors">Go</span>
+                                <span data-lang="node" class="lang-tab px-3 py-1 bg-white/10 text-white rounded-full cursor-pointer transition-colors">JavaScript</span>
+                                <span data-lang="python" class="lang-tab px-3 py-1 hover:bg-white/5 rounded-full cursor-pointer transition-colors">Python</span>
                             </div>
                         </div>
-                        <div class="flex-grow relative p-10 overflow-hidden">
-                            <div
-                                class="absolute inset-0 flex flex-col items-center justify-center opacity-10 group hover:opacity-20 transition-opacity pointer-events-none">
-                                <span class="material-symbols-outlined text-7xl mb-4 text-primary">upload_file</span>
-                            </div>
-                            <div class="relative z-10 font-mono text-sm leading-loose">
-                                <p><span class="text-primary-container">export default</span> <span
-                                        class="text-primary">async function</span> (<span
-                                        class="text-secondary">req</span>) {</p>
-                                <p class="pl-6"><span class="text-primary-container">const</span> { searchParams } =
-                                    <span class="text-primary-container">new</span> URL(req.url);</p>
-                                <p class="pl-6"><span class="text-primary-container">const</span> name =
-                                    searchParams.get(<span class="text-secondary">'name'</span>) || <span
-                                        class="text-secondary">'World'</span>;</p>
-                                <p class="pl-6"><span class="text-primary-container">return new</span> Response(<span
-                                        class="text-secondary">`Hello, ${name}!`</span>);</p>
-                                <p>}</p>
-                            </div>
+                        <div class="flex-grow relative overflow-hidden">
+                            <textarea id="code-editor"
+                                class="w-full h-full min-h-[380px] bg-transparent text-on-surface font-mono text-sm leading-loose p-10 resize-none outline-none custom-scrollbar"
+                                spellcheck="false"
+                                placeholder="Write your code here...">export default async function (req) {
+    const { searchParams } = new URL(req.url);
+    const name = searchParams.get('name') || 'World';
+    return new Response(`Hello, ${name}!`);
+}</textarea>
                         </div>
                         <div class="px-8 py-6 border-t border-white/5 flex justify-between items-center bg-black/40">
-                            <p class="text-xs text-on-surface-variant font-medium">Autosaved 2m ago</p>
+                            <p id="deploy-status" class="text-xs text-on-surface-variant font-medium">Ready to deploy</p>
                             <div class="flex gap-4">
                                 <button
-                                    class="px-6 py-2.5 bg-surface-container-highest text-white rounded-full font-bold text-[10px] uppercase tracking-widest hover:bg-surface-bright transition-all">Format</button>
-                                <button
+                                    class="px-6 py-2.5 bg-surface-container-highest text-white rounded-full font-bold text-[10px] uppercase tracking-widest hover:bg-surface-bright transition-all"
+                                    onclick="document.getElementById('code-editor').value = ''">Clear</button>
+                                <button id="deploy-btn"
                                     class="px-8 py-2.5 bg-white text-black rounded-full font-bold text-[10px] uppercase tracking-widest hover:bg-white/90 transition-all active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.15)]"
-                                    onclick="location.href='logs.html'">Deploy Now</button>
+                                    onclick="deployCode()">Deploy Now</button>
                             </div>
                         </div>
                     </div>
@@ -372,6 +361,77 @@
             </div>
         </div>
     </footer>
+    <script src="js/session.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        // --- Language Switching ---
+        let currentLang = 'node';
+        const defaultCode = {
+            node: `export default async function (req) {\n    const { searchParams } = new URL(req.url);\n    const name = searchParams.get('name') || 'World';\n    return new Response(\`Hello, \${name}!\`);\n}`,
+            python: `def handler(request):\n    name = request.args.get("name", "World")\n    return f"Hello, {name}!"`
+        };
+        const filenames = { node: 'main.js', python: 'main.py' };
+
+        document.querySelectorAll('.lang-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const lang = tab.dataset.lang;
+                if (lang === currentLang) return;
+                currentLang = lang;
+                // Update tab styles
+                document.querySelectorAll('.lang-tab').forEach(t => {
+                    t.classList.remove('bg-white/10', 'text-white');
+                    t.classList.add('hover:bg-white/5');
+                });
+                tab.classList.add('bg-white/10', 'text-white');
+                tab.classList.remove('hover:bg-white/5');
+                // Update editor
+                document.getElementById('code-editor').value = defaultCode[lang];
+                document.getElementById('editor-filename').textContent = filenames[lang];
+            });
+        });
+
+        // --- Deploy Code ---
+        const termFeed = document.querySelector('.custom-scrollbar');
+        function logToTerminal(level, msg) {
+            const time = new Date().toLocaleTimeString('en-GB');
+            const colorClass = level === 'SUCCESS' ? 'text-green-400' : level === 'ERROR' ? 'text-red-400' : 'text-secondary';
+            const p = document.createElement('p');
+            p.className = 'text-on-surface-variant';
+            p.innerHTML = `<span class="text-outline/50">[${time}]</span> <span class="${colorClass}">${level}</span> ${msg}`;
+            termFeed.insertBefore(p, termFeed.lastElementChild);
+            termFeed.scrollTop = termFeed.scrollHeight;
+        }
+
+        async function deployCode() {
+            const code = document.getElementById('code-editor').value.trim();
+            const status = document.getElementById('deploy-status');
+            const btn = document.getElementById('deploy-btn');
+            if (!code) { status.textContent = 'Error: No code to deploy'; return; }
+
+            btn.disabled = true;
+            btn.textContent = 'Deploying...';
+            status.textContent = 'Submitting to queue...';
+            logToTerminal('INFO', `Submitting <span class="text-primary font-bold">${filenames[currentLang]}</span> (${currentLang}) to edge mesh`);
+
+            try {
+                const result = await SylkAPI.submitTask(code, currentLang);
+                if (result && result.task_id) {
+                    status.textContent = `Queued: ${result.task_id.substring(0, 8)}...`;
+                    logToTerminal('SUCCESS', `Task <span class="text-primary font-bold">${result.task_id.substring(0, 8)}</span> queued successfully`);
+                    logToTerminal('INFO', 'Waiting for edge node pickup...');
+                } else {
+                    status.textContent = 'Deploy failed. Check login.';
+                    logToTerminal('ERROR', 'Deploy failed. Are you logged in?');
+                }
+            } catch (e) {
+                status.textContent = 'Network error';
+                logToTerminal('ERROR', `Network error: ${e.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Deploy Now';
+            }
+        }
+    </script>
 </body>
 
 </html>

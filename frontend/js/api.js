@@ -56,10 +56,10 @@ class SylkAPI {
         return response.json();
     }
 
-    static async submitTask(code, hardware_pref = "default") {
+    static async submitTask(code, language = "python", hardware_pref = "default") {
         return this.fetchWithAuth("/tasks", {
             method: 'POST',
-            body: JSON.stringify({ code, hardware_pref })
+            body: JSON.stringify({ code, language, hardware_pref })
         });
     }
 

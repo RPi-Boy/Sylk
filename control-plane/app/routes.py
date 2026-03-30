@@ -76,7 +76,7 @@ async def create_task(task: schemas.TaskIn, db: Session = Depends(get_db), curre
     db.commit()
     db.refresh(db_task)
 
-    queue_task(task_id, task.code, pref)
+    queue_task(task_id, task.code, pref, task.language)
     return schemas.TaskOut(task_id=task_id, status=schemas.TaskStatus.QUEUED)
 
 @router.get("/tasks/{task_id}", response_model=schemas.TaskOut)
