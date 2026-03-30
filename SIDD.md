@@ -30,6 +30,12 @@ This document serves as the primary coordination point for **Siddhant (Sidd)** a
 - [ ] **Tailscale Integration:** Finalize `scripts/setup_tailscale.sh` for stable peer-to-peer connectivity between edge nodes and the control plane.
 - [ ] **Cloudflare Tunnel:** Expose the Control Plane API securely without port forwarding.
 
+### 5. Frontend Integration (Active)
+- [ ] **API Connectivity Layer:** Create `frontend/js/api.js` for unified backend communication.
+- [ ] **Real-time Telemetry:** Connect `logs.html` and `metrics.html` to the `/telemetry` SSE stream.
+- [ ] **Task Deployment UI:** Enable code submission via the drag-and-drop zone in `index.html`.
+- [ ] **Analytics Dashboard:** Wire the historical data endpoints to the performance charts.
+
 ---
 
 ## 📡 Siddhant's Active Directive
@@ -37,4 +43,5 @@ This document serves as the primary coordination point for **Siddhant (Sidd)** a
 *   "If review is needed, add it to the implementation plan for confirmation."
 
 ---
-*Last Updated: 2026-03-30 12:05 PM*
+---
+*Last Updated: 2026-03-30 12:35 PM*
