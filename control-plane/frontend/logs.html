@@ -48,9 +48,15 @@
     }
 
     @keyframes spin-slow {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
     }
+
     .animate-spin-slow {
       animation: spin-slow 8s linear infinite;
     }
@@ -128,41 +134,58 @@
   <nav class="fixed top-0 w-full z-[100] bg-black/60 backdrop-blur-xl border-b border-white/5">
     <div class="flex items-center justify-between px-8 py-4 max-w-7xl mx-auto">
       <div class="flex items-center gap-10">
-        <span class="text-2xl font-bold tracking-tighter text-white font-headline cursor-pointer" onclick="location.href='index.html'">Sylk</span>
+        <span class="text-2xl font-bold tracking-tighter text-white font-headline cursor-pointer"
+          onclick="location.href='index.html'">Sylk</span>
         <div class="hidden md:flex gap-8 items-center">
-          <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="index.html">Home</a>
-          <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="deploy.html">Deploy</a>
-          <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="projects.html">Projects</a>
-          <a class="text-white font-medium text-sm tracking-tight border-b-2 border-primary pb-1" href="logs.html">Logs</a>
-          <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="metrics.html">Usage</a>
+          <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight"
+            href="index.html">Home</a>
+          <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight"
+            href="deploy.html">Deploy</a>
+          <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight"
+            href="projects.html">Projects</a>
+          <a class="text-white font-medium text-sm tracking-tight border-b-2 border-primary pb-1"
+            href="logs.html">Logs</a>
+          <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight"
+            href="metrics.html">Usage</a>
         </div>
       </div>
       <div class="flex items-center gap-6">
         <div class="hidden lg:flex items-center bg-surface-container-low px-3 py-1.5 rounded-lg border border-white/5">
           <span class="material-symbols-outlined text-sm text-outline mr-2">terminal</span>
-          <span class="text-[10px] font-label text-outline uppercase tracking-widest" id="active-function-name">prod-function-01</span>
+          <span class="text-[10px] font-label text-outline uppercase tracking-widest"
+            id="active-function-name">prod-function-01</span>
         </div>
-        <button class="material-symbols-outlined text-on-surface-variant hover:text-white transition-colors">notifications</button>
-        <button class="bg-white text-black px-6 py-2 rounded-full text-sm font-bold hover:bg-white/90 transition-all active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.1)]" onclick="location.href='auth.html'">Login / Sign Up</button>
+        <button
+          class="material-symbols-outlined text-on-surface-variant hover:text-white transition-colors">notifications</button>
+        <button
+          class="bg-white text-black px-6 py-2 rounded-full text-sm font-bold hover:bg-white/90 transition-all active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+          onclick="location.href='auth.html'">Login</button>
       </div>
     </div>
   </nav>
 
   <main class="relative pt-32 pb-20 px-8 max-w-7xl mx-auto overflow-hidden">
     <div class="absolute inset-0 z-0 hero-glow"></div>
-    
+
     <!-- Header Section -->
     <header class="relative z-10 mb-12">
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 class="text-5xl font-extrabold font-headline tracking-tight text-white mb-2">Function Logs</h1>
-          <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest">Environment: <span class="text-primary font-bold">Production (V2.4.0)</span></p>
+          <p class="text-on-surface-variant font-label text-xs uppercase tracking-widest">Environment: <span
+              class="text-primary font-bold">Production (V2.4.0)</span></p>
         </div>
         <!-- Internal Tabs Navigation -->
         <div class="flex gap-1 bg-surface-container-low p-1 rounded-full border border-white/5">
-          <button class="px-6 py-2 rounded-full text-xs font-label uppercase tracking-widest bg-surface-container-highest text-white shadow-lg" onclick="location.href='logs.html'">Logs</button>
-          <button class="px-6 py-2 rounded-full text-xs font-label uppercase tracking-widest text-on-surface-variant hover:text-white transition-colors" onclick="location.href='metrics.html'">Usage</button>
-          <button class="px-6 py-2 rounded-full text-xs font-label uppercase tracking-widest text-on-surface-variant hover:text-white transition-colors" onclick="location.href='projects.html'">Projects</button>
+          <button
+            class="px-6 py-2 rounded-full text-xs font-label uppercase tracking-widest bg-surface-container-highest text-white shadow-lg"
+            onclick="location.href='logs.html'">Logs</button>
+          <button
+            class="px-6 py-2 rounded-full text-xs font-label uppercase tracking-widest text-on-surface-variant hover:text-white transition-colors"
+            onclick="location.href='metrics.html'">Usage</button>
+          <button
+            class="px-6 py-2 rounded-full text-xs font-label uppercase tracking-widest text-on-surface-variant hover:text-white transition-colors"
+            onclick="location.href='projects.html'">Projects</button>
         </div>
       </div>
     </header>
@@ -170,21 +193,27 @@
     <!-- Tool Bar / Filters -->
     <section class="relative z-10 mb-8 flex flex-wrap items-center justify-between gap-4 p-4 glass-card rounded-2xl">
       <div class="flex flex-wrap items-center gap-3">
-        <button class="flex items-center gap-2 px-4 py-2 bg-surface-container-low border border-white/5 rounded-full text-xs font-label uppercase tracking-wider text-on-surface-variant hover:text-white hover:border-white/10 transition-all">
+        <button
+          class="flex items-center gap-2 px-4 py-2 bg-surface-container-low border border-white/5 rounded-full text-xs font-label uppercase tracking-wider text-on-surface-variant hover:text-white hover:border-white/10 transition-all">
           <span class="material-symbols-outlined text-sm">filter_list</span>
           Level: All
         </button>
         <div class="relative min-w-[300px]">
-          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
-          <input class="w-full bg-surface-container-lowest border border-white/5 focus:ring-1 focus:ring-primary/50 focus:border-primary/50 rounded-full pl-12 pr-4 py-2 text-xs text-on-surface placeholder:text-outline/50 font-label tracking-wide" placeholder="Filter logs..." type="text" />
+          <span
+            class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
+          <input
+            class="w-full bg-surface-container-lowest border border-white/5 focus:ring-1 focus:ring-primary/50 focus:border-primary/50 rounded-full pl-12 pr-4 py-2 text-xs text-on-surface placeholder:text-outline/50 font-label tracking-wide"
+            placeholder="Filter logs..." type="text" />
         </div>
       </div>
       <div class="flex items-center gap-3">
-        <button class="flex items-center gap-2 px-5 py-2 bg-surface-container-highest/50 border border-white/5 rounded-full text-[10px] font-label uppercase tracking-widest text-secondary hover:bg-surface-container-highest transition-all">
+        <button
+          class="flex items-center gap-2 px-5 py-2 bg-surface-container-highest/50 border border-white/5 rounded-full text-[10px] font-label uppercase tracking-widest text-secondary hover:bg-surface-container-highest transition-all">
           <span class="material-symbols-outlined text-sm">download</span>
           Export
         </button>
-        <button class="flex items-center gap-2 px-5 py-2 bg-primary/10 text-primary border border-primary/20 rounded-full text-[10px] font-label uppercase tracking-widest hover:bg-primary/20 transition-all">
+        <button
+          class="flex items-center gap-2 px-5 py-2 bg-primary/10 text-primary border border-primary/20 rounded-full text-[10px] font-label uppercase tracking-widest hover:bg-primary/20 transition-all">
           <span class="material-symbols-outlined text-sm animate-spin-slow">sync</span>
           Live Stream
         </button>
@@ -195,7 +224,8 @@
     <div class="relative z-10 grid grid-cols-1 lg:grid-cols-4 gap-8">
       <!-- Log Feed -->
       <div class="lg:col-span-3 glass-card rounded-2xl overflow-hidden shadow-2xl flex flex-col h-[650px]">
-        <div class="bg-surface-container-highest/30 px-6 py-4 border-b border-white/5 flex items-center justify-between">
+        <div
+          class="bg-surface-container-highest/30 px-6 py-4 border-b border-white/5 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <div class="flex gap-1.5 mr-4">
               <div class="w-2.5 h-2.5 rounded-full bg-error/40 border border-error/20"></div>
@@ -204,31 +234,38 @@
             </div>
             <span class="text-[10px] font-label text-outline uppercase tracking-[0.2em]">runtime_logs.std_out</span>
           </div>
-          <span class="text-[9px] font-label text-outline/60 tracking-widest uppercase" id="connection-status">CONNECTED • 122ms LATENCY</span>
+          <span class="text-[9px] font-label text-outline/60 tracking-widest uppercase" id="connection-status">CONNECTED
+            • 122ms LATENCY</span>
         </div>
-        <div id="terminal-feed" class="flex-1 overflow-y-auto terminal-scroll p-6 font-mono text-[13px] leading-relaxed bg-black/20">
+        <div id="terminal-feed"
+          class="flex-1 overflow-y-auto terminal-scroll p-6 font-mono text-[13px] leading-relaxed bg-black/20">
           <div class="space-y-1 mb-4" id="feed-container">
             <!-- Logs injected here -->
           </div>
         </div>
-        <div class="bg-surface-container-highest/20 border-t border-white/5 px-6 py-4 flex items-center justify-between">
+        <div
+          class="bg-surface-container-highest/20 border-t border-white/5 px-6 py-4 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <span class="w-2 h-2 rounded-full bg-secondary animate-pulse shadow-[0_0_8px_#aec6ff]"></span>
             <span class="text-[10px] font-label text-outline uppercase tracking-wider">Listening for new logs...</span>
           </div>
           <div class="flex items-center gap-6">
-            <button class="text-[10px] font-label text-outline hover:text-white transition-colors uppercase tracking-widest" onclick="document.getElementById('feed-container').innerHTML=''">Clear Console</button>
+            <button
+              class="text-[10px] font-label text-outline hover:text-white transition-colors uppercase tracking-widest"
+              onclick="document.getElementById('feed-container').innerHTML=''">Clear Console</button>
           </div>
         </div>
       </div>
 
       <!-- Stats Sidebar -->
       <div class="space-y-6">
-        <div class="p-6 bg-surface-container-low rounded-2xl border border-white/5 shadow-xl relative overflow-hidden group">
+        <div
+          class="p-6 bg-surface-container-low rounded-2xl border border-white/5 shadow-xl relative overflow-hidden group">
           <p class="text-[10px] font-label text-outline uppercase tracking-widest mb-4">Error Rate (24h)</p>
           <div class="flex items-end justify-between">
             <span class="text-4xl font-headline font-extrabold text-error">1.2%</span>
-            <span class="text-[10px] font-label text-error bg-error/10 border border-error/20 px-2 py-1 rounded-full flex items-center gap-1">
+            <span
+              class="text-[10px] font-label text-error bg-error/10 border border-error/20 px-2 py-1 rounded-full flex items-center gap-1">
               <span class="material-symbols-outlined text-xs">trending_up</span> 0.4%
             </span>
           </div>
@@ -237,9 +274,11 @@
         <div class="p-6 bg-surface-container-low rounded-2xl border border-white/5 shadow-xl">
           <h3 class="text-sm font-headline font-bold text-white mb-4 uppercase tracking-widest">Diagnostics</h3>
           <div class="space-y-2">
-            <a class="flex items-center justify-between p-3 bg-surface-container-lowest border border-white/5 rounded-xl hover:bg-white/5 transition-all group" href="#">
+            <a class="flex items-center justify-between p-3 bg-surface-container-lowest border border-white/5 rounded-xl hover:bg-white/5 transition-all group"
+              href="#">
               <div class="flex items-center gap-3">
-                <span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform text-xl">troubleshoot</span>
+                <span
+                  class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform text-xl">troubleshoot</span>
                 <span class="text-xs font-label uppercase tracking-wider text-on-surface">Health Check</span>
               </div>
               <span class="material-symbols-outlined text-outline text-sm">chevron_right</span>
@@ -253,15 +292,20 @@
   <footer class="bg-black border-t border-white/5 w-full py-20 px-12">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12">
       <div>
-        <span class="text-3xl font-bold tracking-tighter text-white font-headline cursor-pointer" onclick="location.href='index.html'">Sylk</span>
-        <p class="max-w-xs text-on-surface-variant text-sm leading-relaxed mt-4">The global compute platform for high-performance applications. Engineered for the next generation of the web.</p>
+        <span class="text-3xl font-bold tracking-tighter text-white font-headline cursor-pointer"
+          onclick="location.href='index.html'">Sylk</span>
+        <p class="max-w-xs text-on-surface-variant text-sm leading-relaxed mt-4">The global compute platform for
+          high-performance applications. Engineered for the next generation of the web.</p>
       </div>
     </div>
-    <div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
-      <p class="font-['Space_Grotesk'] text-[0.7rem] uppercase tracking-widest text-outline">© 2024 Sylk Kinetic Systems Inc.</p>
+    <div
+      class="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <p class="font-['Space_Grotesk'] text-[0.7rem] uppercase tracking-widest text-outline">© 2026 Sylk Kinetic Systems
+        Inc.</p>
       <div class="flex items-center gap-2">
         <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_#22c55e]"></div>
-        <span class="text-[0.7rem] font-['Space_Grotesk'] uppercase tracking-widest text-outline">All Systems Operational</span>
+        <span class="text-[0.7rem] font-['Space_Grotesk'] uppercase tracking-widest text-outline">All Systems
+          Operational</span>
       </div>
     </div>
   </footer>
@@ -275,6 +319,7 @@
         let levelColor = "text-secondary";
         if (level === "error" || level === "warn") levelColor = "text-error";
         else if (level === "metric") levelColor = "text-primary";
+        else if (level === "success") levelColor = "text-green-400";
 
         const markup = `
           <div class="flex items-start gap-4 text-on-surface-variant hover:bg-white/5 py-0.5 px-2 rounded transition-colors group">
@@ -300,11 +345,61 @@
         });
       });
 
+      source.addEventListener("sylk_event", (e) => {
+        const data = JSON.parse(e.data);
+        const date = new Date();
+        const timeStr = date.toTimeString().split(' ')[0] + '.' + String(date.getMilliseconds()).padStart(3, '0');
+        
+        const shortTaskId = data.task_id ? data.task_id.substring(0, 8) : 'unknown';
+        const nodeId = data.node_id || 'network';
+
+        if (data.event === "task_queued") {
+          appendLog("info", `Task [${shortTaskId}] queued for edge mesh execution (${data.language})`, timeStr);
+        } else if (data.event === "task_picked_up") {
+          appendLog("metric", `Node ${nodeId} picked up Task [${shortTaskId}]`, timeStr);
+        } else if (data.event === "task_executing") {
+          appendLog("info", `Node ${nodeId} is executing Task [${shortTaskId}] in sandbox...`, timeStr);
+        } else if (data.event === "task_completed") {
+          appendLog("success", `Node ${nodeId} successfully completed Task [${shortTaskId}]`, timeStr);
+        } else if (data.event === "task_error") {
+          appendLog("error", `Node ${nodeId} error on Task [${shortTaskId}]: ${data.error || 'Unknown error'}`, timeStr);
+        } else if (data.event === "task_failed") {
+          appendLog("warn", `Node ${nodeId} failed Task [${shortTaskId}]: ${data.error || 'Execution Error'}`, timeStr);
+        }
+      });
+
       source.onerror = () => {
         appendLog("error", "SSE Connection lost or unauthorized.", "SYS");
         source.close();
       };
+
+      // Task Polling Logic for redirected deployments
+      const urlParams = new URLSearchParams(window.location.search);
+      const taskId = urlParams.get('task');
+
+      if (taskId) {
+        appendLog("info", `Tracking deployment for task: ${taskId}`, "SYS");
+        const date = new Date();
+        const timeStr = date.toTimeString().split(' ')[0] + '.' + String(date.getMilliseconds()).padStart(3, '0');
+
+        async function pollTask() {
+          try {
+            const res = await SylkAPI.fetchWithAuth(`/tasks/${taskId}`);
+            if (res) {
+              appendLog("info", `Task [${taskId.split('-')[0]}] status: ${res.status.toUpperCase()}`, timeStr);
+              if (res.status === 'done' || res.status === 'failed') {
+                return; // stop polling
+              }
+            }
+          } catch (err) {
+            console.error("Task poll error:", err);
+          }
+          setTimeout(pollTask, 3000);
+        }
+        pollTask();
+      }
     });
   </script>
 </body>
+
 </html>
