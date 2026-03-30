@@ -71,3 +71,15 @@ This document outlines the specific tasks and technical specifications for the D
 4.  **CRIU (Checkpoint/Restore in Userspace)**: Advanced technique to "freeze" a running container once initialized and "thaw" it instantly for new tasks. This could bring spinup times into the low tens of milliseconds.
 5.  **Multi-stage Builds**: Ensure that compilers and build tools (if needed for dependencies) are not present in the final runtime image.
 6.  **Local Image Registry**: Running a local `zot` or `registry:2` on the edge nodes to avoid any network latency during image pulls.
+
+## aarav suggests
+
+### Issue: Network Isolation vs Port 5000 Binding
+Both the Python and Node.js runtimes have been structured as HTTP servers listening on port 5000. However, the security specification mandates the `--network none` flag to prevent data exfiltration. With `--network none`, port publishing to the host is impossible because the container's network namespace only contains a loopback interface (`lo`). 
+
+### Solution / Workaround
+To strictly enforce the `--network none` rule while still utilizing the existing HTTP wrappers on port 5000, the Node Agent will use `docker exec` (via `docker-py`) to execute a command *inside* the container that sends a loopback HTTP POST request to itself. 
+- **Python Runtime:** We will `exec` a `python -c` snippet that uses the standard `urllib` library to send the payload to `localhost:5000`.
+- **Node.js Runtime:** We will `exec` a `node -e` snippet that uses the native `fetch` API to send the payload to `localhost:5000`.
+
+This approach keeps `--network none` perfectly secure, doesn't require extra software like `curl`, and allows the Node Agent to cleanly collect the JSON response from `stdout`. Additionally, tasks will only be acknowledged (ACKed) in Redis after successful Docker execution to ensure high reliability.
