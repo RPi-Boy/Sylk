@@ -1,10 +1,15 @@
 import requests
 import socket
 import platform
-import psutil
+import os
+
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
 
 def get_node_info():
-    import os
     arch = platform.machine().lower()
     
     # Mock GPU support based on env variable
@@ -15,14 +20,19 @@ def get_node_info():
     else:
         hardware_type = "default"
 
-
+    if HAS_PSUTIL:
+        cpu_cores = psutil.cpu_count() or 1
+        memory_mb = int(psutil.virtual_memory().total / (1024 * 1024))
+    else:
+        cpu_cores = os.cpu_count() or 1
+        memory_mb = 4096
 
     return {
         "node_id": socket.gethostname(),
         "hostname": socket.gethostname(),
         "hardware_type": hardware_type,
-        "cpu_cores": psutil.cpu_count() or 1,
-        "memory_mb": int(psutil.virtual_memory().total / (1024 * 1024))
+        "cpu_cores": cpu_cores,
+        "memory_mb": memory_mb
     }
 
 def register(url, node_id=None):
@@ -37,10 +47,17 @@ def register(url, node_id=None):
         return False
 
 def send_heartbeat(url, node_id, is_busy):
+    if HAS_PSUTIL:
+        cpu_usage = psutil.cpu_percent(interval=None)
+        memory_usage = psutil.virtual_memory().percent
+    else:
+        cpu_usage = 10.0
+        memory_usage = 50.0
+
     payload = {
         "node_id": node_id,
-        "cpu_usage": psutil.cpu_percent(interval=None),
-        "memory_usage": psutil.virtual_memory().percent,
+        "cpu_usage": cpu_usage,
+        "memory_usage": memory_usage,
         "is_busy": is_busy
     }
     try:
