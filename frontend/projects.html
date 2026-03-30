@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html class="dark" lang="en">
+
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Sylk | Active Projects</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@400;500;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -75,179 +80,240 @@
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
+
         .kinetic-gradient {
             background: linear-gradient(135deg, #d2bbff 0%, #7c3aed 100%);
         }
+
         .glass-card {
             background: rgba(17, 17, 17, 0.4);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.10);
         }
+
         .hero-glow {
             background: radial-gradient(circle at top right, rgba(124, 58, 237, 0.08) 0%, transparent 60%);
         }
+
+        .text-on-surface-variant {
+            color: rgba(255, 255, 255, 0.65) !important;
+        }
+
+        nav a.nav-active {
+            color: #fff;
+            text-shadow: 0 0 12px rgba(210, 187, 255, 0.7);
+            border-bottom: 2px solid #d2bbff;
+            padding-bottom: 2px;
+        }
     </style>
 </head>
+
 <body class="bg-background text-on-background font-body selection:bg-primary/30 antialiased">
-<!-- TopNavBar -->
-<nav class="fixed top-0 w-full z-[100] bg-black/60 backdrop-blur-xl border-b border-white/5">
-<div class="flex items-center justify-between px-8 py-4 max-w-7xl mx-auto">
-<div class="flex items-center gap-10">
-<span class="text-2xl font-bold tracking-tighter text-white font-headline cursor-pointer" onclick="location.href='index.html'">Sylk</span>
-<div class="hidden md:flex gap-8 items-center">
-<a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="index.html">Home</a>
-<a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="deploy.html">Deploy</a>
-<a class="text-white font-medium text-sm tracking-tight border-b-2 border-primary pb-1" href="projects.html">Projects</a>
-<a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="logs.html">Logs</a>
-<a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="metrics.html">Usage</a>
-</div>
-</div>
-<div class="flex items-center gap-6">
-<div class="hidden lg:flex items-center bg-surface-container-low px-3 py-1.5 rounded-lg border border-white/5">
-<span class="material-symbols-outlined text-sm text-outline mr-2">search</span>
-<input class="bg-transparent border-none text-xs focus:ring-0 w-40 text-on-surface" placeholder="Search function..." type="text"/>
-</div>
-<button class="bg-white text-black px-6 py-2 rounded-full text-sm font-bold hover:bg-white/90 transition-all active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.1)]" onclick="location.href='auth.html'">Login / Sign Up</button>
-</div>
-</div>
-</nav>
-<main class="relative pt-32 pb-20 px-8 max-w-7xl mx-auto min-h-screen">
-<div class="absolute inset-0 z-0 hero-glow pointer-events-none"></div>
-<!-- Header Section -->
-<header class="relative z-10 mb-16 flex flex-col md:flex-row md:items-end justify-between gap-8">
-<div class="space-y-4">
-<h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-white font-headline leading-none">Your Projects</h1>
-<p class="text-on-surface-variant max-w-2xl text-lg font-medium">Manage and monitor your decentralized serverless functions across the Sylk node mesh.</p>
-</div>
-<div class="flex gap-3">
-<button class="bg-white text-black px-8 py-3 rounded-full text-sm font-bold shadow-2xl hover:scale-[1.02] active:scale-95 transition-all" onclick="location.href='auth.html'">+ New Function</button>
-</div>
-</header>
-<!-- Projects Grid -->
-<section class="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-<!-- Project 1 -->
-<div class="glass-card group p-8 rounded-2xl hover:border-primary/40 transition-all cursor-pointer" onclick="location.href='logs.html'">
-<div class="flex justify-between items-start mb-6">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-colors">
-<span class="material-symbols-outlined">bolt</span>
-</div>
-<div>
-<h3 class="text-white font-bold font-headline">auth-verify</h3>
-<p class="text-[10px] text-outline uppercase tracking-widest font-label">US-East-1 • API</p>
-</div>
-</div>
-<span class="px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-widest font-label bg-green-500/10 text-green-400 border border-green-500/20">Active</span>
-</div>
-<div class="space-y-4 mb-6">
-<div class="flex justify-between text-xs">
-<span class="text-on-surface-variant">Avg. Latency</span>
-<span class="text-white font-bold">12ms</span>
-</div>
-<div class="h-1 bg-white/5 rounded-full overflow-hidden">
-<div class="h-full bg-primary/40 w-1/4"></div>
-</div>
-</div>
-<div class="flex items-center justify-between pt-4 border-t border-white/5 opacity-60 group-hover:opacity-100 transition-opacity">
-<div class="flex -space-x-2">
-<div class="w-6 h-6 rounded-full bg-surface border border-white/10 flex items-center justify-center text-[8px] font-bold">CP</div>
-<div class="w-6 h-6 rounded-full bg-primary/20 border border-white/10 flex items-center justify-center text-[8px] font-bold">+2</div>
-</div>
-<span class="material-symbols-outlined text-lg">arrow_forward</span>
-</div>
-</div>
-<!-- Project 2 -->
-<div class="glass-card group p-8 rounded-2xl hover:border-secondary/40 transition-all cursor-pointer" onclick="location.href='logs.html'">
-<div class="flex justify-between items-start mb-6">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary group-hover:bg-secondary group-hover:text-black transition-colors">
-<span class="material-symbols-outlined">image</span>
-</div>
-<div>
-<h3 class="text-white font-bold font-headline">image-processor</h3>
-<p class="text-[10px] text-outline uppercase tracking-widest font-label">EU-West-1 • WORKER</p>
-</div>
-</div>
-<span class="px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-widest font-label bg-green-500/10 text-green-400 border border-green-500/20">Active</span>
-</div>
-<div class="space-y-4 mb-6">
-<div class="flex justify-between text-xs">
-<span class="text-on-surface-variant">Throughput</span>
-<span class="text-white font-bold">1.2 GB/s</span>
-</div>
-<div class="h-1 bg-white/5 rounded-full overflow-hidden">
-<div class="h-full bg-secondary/40 w-3/4"></div>
-</div>
-</div>
-<div class="flex items-center justify-between pt-4 border-t border-white/5 opacity-60 group-hover:opacity-100 transition-opacity">
-<div class="flex -space-x-2">
-<div class="w-6 h-6 rounded-full bg-surface border border-white/10 flex items-center justify-center text-[8px] font-bold">JD</div>
-</div>
-<span class="material-symbols-outlined text-lg">arrow_forward</span>
-</div>
-</div>
-<!-- Project 3 -->
-<div class="glass-card group p-8 rounded-2xl hover:border-error/40 transition-all cursor-pointer" onclick="location.href='logs.html'">
-<div class="flex justify-between items-start mb-6">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-xl bg-error/10 flex items-center justify-center text-error group-hover:bg-error group-hover:text-black transition-colors">
-<span class="material-symbols-outlined">database</span>
-</div>
-<div>
-<h3 class="text-white font-bold font-headline">legacy-db-bridge</h3>
-<p class="text-[10px] text-outline uppercase tracking-widest font-label">AP-South-1 • PROXY</p>
-</div>
-</div>
-<span class="px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-widest font-label bg-error/10 text-error border border-error/20">Error</span>
-</div>
-<div class="space-y-4 mb-6">
-<div class="flex justify-between text-xs text-error">
-<span class="text-error/60">Success Rate</span>
-<span class="text-error font-bold">12%</span>
-</div>
-<div class="h-1 bg-white/5 rounded-full overflow-hidden">
-<div class="h-full bg-error/40 w-[12%]"></div>
-</div>
-</div>
-<div class="flex items-center justify-between pt-4 border-t border-white/5 opacity-60 group-hover:opacity-100 transition-opacity">
-<div class="text-[10px] text-error font-bold uppercase tracking-widest">Critical Alert</div>
-<span class="material-symbols-outlined text-lg text-error">warning</span>
-</div>
-</div>
-</section>
-</main>
-<!-- Footer -->
-<footer class="bg-black border-t border-white/5 w-full py-20 px-12">
-<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12">
-<div class="flex flex-col gap-6">
-<span class="text-3xl font-bold tracking-tighter text-white font-headline cursor-pointer" onclick="location.href='index.html'">Sylk</span>
-<p class="max-w-xs text-on-surface-variant text-sm leading-relaxed">The global compute platform for high-performance applications. Engineered for the next generation of the web.</p>
-</div>
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-12 md:gap-16">
-<div class="flex flex-col gap-4">
-<span class="text-white font-bold text-sm tracking-tight">Product</span>
-<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Features</a>
-<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Pricing</a>
-</div>
-<div class="flex flex-col gap-4">
-<span class="text-white font-bold text-sm tracking-tight">Resources</span>
-<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Docs</a>
-<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Status</a>
-</div>
-<div class="flex flex-col gap-4">
-<span class="text-white font-bold text-sm tracking-tight">Legal</span>
-<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Privacy</a>
-<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Terms</a>
-</div>
-</div>
-</div>
-<div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
-<p class="font-['Space_Grotesk'] text-[0.7rem] uppercase tracking-widest text-outline">© 2024 Sylk Kinetic Systems Inc.</p>
-<div class="flex items-center gap-2">
-<div class="w-2 h-2 bg-green-500 rounded-full"></div>
-<span class="text-[0.7rem] font-['Space_Grotesk'] uppercase tracking-widest text-outline">All Systems Operational</span>
-</div>
-</div>
-</footer>
+    <!-- TopNavBar -->
+    <nav class="fixed top-0 w-full z-[100] bg-black/60 backdrop-blur-xl border-b border-white/5">
+        <div class="flex items-center justify-between px-8 py-4 max-w-7xl mx-auto">
+            <div class="flex items-center gap-10">
+                <span class="text-2xl font-bold tracking-tighter text-white font-headline cursor-pointer"
+                    onclick="location.href='index.html'">Sylk</span>
+                <div class="hidden md:flex gap-8 items-center">
+                    <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight"
+                        href="index.html">Home</a>
+                    <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight"
+                        href="deploy.html">Deploy</a>
+                    <a class="text-white font-medium text-sm tracking-tight nav-active"
+                        href="projects.html">Projects</a>
+                    <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight"
+                        href="logs.html">Logs</a>
+                    <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight"
+                        href="metrics.html">Usage</a>
+                </div>
+            </div>
+            <div class="flex items-center gap-6">
+                <div
+                    class="hidden lg:flex items-center bg-surface-container-low px-3 py-1.5 rounded-lg border border-white/5">
+                    <span class="material-symbols-outlined text-sm text-outline mr-2">search</span>
+                    <input class="bg-transparent border-none text-xs focus:ring-0 w-40 text-on-surface"
+                        placeholder="Search function..." type="text" />
+                </div>
+                <button
+                    class="bg-white text-black px-6 py-2 rounded-full text-sm font-bold hover:bg-white/90 transition-all active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
+                    onclick="location.href='auth.html'">Login</button>
+            </div>
+        </div>
+    </nav>
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 text-xs font-label text-outline pt-32 px-8 max-w-7xl mx-auto mb-6">
+        <a href="index.html" class="hover:text-white transition-colors">Home</a>
+        <span class="material-symbols-outlined text-sm">chevron_right</span>
+        <span class="text-white font-bold">Projects</span>
+    </nav>
+    <main class="relative pb-20 px-8 max-w-7xl mx-auto min-h-screen">
+        <div class="absolute inset-0 z-0 hero-glow pointer-events-none"></div>
+        <!-- Header Section -->
+        <header class="relative z-10 mb-16 flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div class="space-y-4">
+                <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-white font-headline leading-none">
+                    Your Projects</h1>
+                <p class="text-on-surface-variant max-w-2xl text-lg font-medium">Manage and monitor your decentralized
+                    serverless functions across the Sylk node mesh.</p>
+            </div>
+            <div class="flex gap-3">
+                <button
+                    class="bg-white text-black px-8 py-3 rounded-full text-sm font-bold shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
+                    onclick="location.href='auth.html'">+ New Function</button>
+            </div>
+        </header>
+        <!-- Projects Grid -->
+        <section class="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Project 1 -->
+            <div class="glass-card group p-8 rounded-2xl hover:border-primary/40 transition-all cursor-pointer"
+                onclick="location.href='logs.html'">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-colors">
+                            <span class="material-symbols-outlined">bolt</span>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-bold font-headline">auth-verify</h3>
+                            <p class="text-[10px] text-outline uppercase tracking-widest font-label">US-East-1 • API</p>
+                        </div>
+                    </div>
+                    <span
+                        class="px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-widest font-label bg-green-500/10 text-green-400 border border-green-500/20">Active</span>
+                </div>
+                <div class="space-y-4 mb-6">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-on-surface-variant">Avg. Latency</span>
+                        <span class="text-white font-bold">12ms</span>
+                    </div>
+                    <div class="h-1 bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-full bg-primary/40 w-1/4"></div>
+                    </div>
+                </div>
+                <div
+                    class="flex items-center justify-between pt-4 border-t border-white/5 opacity-60 group-hover:opacity-100 transition-opacity">
+                    <div class="flex -space-x-2">
+                        <div
+                            class="w-6 h-6 rounded-full bg-surface border border-white/10 flex items-center justify-center text-[8px] font-bold">
+                            CP</div>
+                        <div
+                            class="w-6 h-6 rounded-full bg-primary/20 border border-white/10 flex items-center justify-center text-[8px] font-bold">
+                            +2</div>
+                    </div>
+                    <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                </div>
+            </div>
+            <!-- Project 2 -->
+            <div class="glass-card group p-8 rounded-2xl hover:border-secondary/40 transition-all cursor-pointer"
+                onclick="location.href='logs.html'">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary group-hover:bg-secondary group-hover:text-black transition-colors">
+                            <span class="material-symbols-outlined">image</span>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-bold font-headline">image-processor</h3>
+                            <p class="text-[10px] text-outline uppercase tracking-widest font-label">EU-West-1 • WORKER
+                            </p>
+                        </div>
+                    </div>
+                    <span
+                        class="px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-widest font-label bg-green-500/10 text-green-400 border border-green-500/20">Active</span>
+                </div>
+                <div class="space-y-4 mb-6">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-on-surface-variant">Throughput</span>
+                        <span class="text-white font-bold">1.2 GB/s</span>
+                    </div>
+                    <div class="h-1 bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-full bg-secondary/40 w-3/4"></div>
+                    </div>
+                </div>
+                <div
+                    class="flex items-center justify-between pt-4 border-t border-white/5 opacity-60 group-hover:opacity-100 transition-opacity">
+                    <div class="flex -space-x-2">
+                        <div
+                            class="w-6 h-6 rounded-full bg-surface border border-white/10 flex items-center justify-center text-[8px] font-bold">
+                            JD</div>
+                    </div>
+                    <span class="material-symbols-outlined text-lg">arrow_forward</span>
+                </div>
+            </div>
+            <!-- Project 3 -->
+            <div class="glass-card group p-8 rounded-2xl hover:border-error/40 transition-all cursor-pointer"
+                onclick="location.href='logs.html'">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-error/10 flex items-center justify-center text-error group-hover:bg-error group-hover:text-black transition-colors">
+                            <span class="material-symbols-outlined">database</span>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-bold font-headline">legacy-db-bridge</h3>
+                            <p class="text-[10px] text-outline uppercase tracking-widest font-label">AP-South-1 • PROXY
+                            </p>
+                        </div>
+                    </div>
+                    <span
+                        class="px-2.5 py-1 rounded text-[9px] font-bold uppercase tracking-widest font-label bg-error/10 text-error border border-error/20">Error</span>
+                </div>
+                <div class="space-y-4 mb-6">
+                    <div class="flex justify-between text-xs text-error">
+                        <span class="text-error/60">Success Rate</span>
+                        <span class="text-error font-bold">12%</span>
+                    </div>
+                    <div class="h-1 bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-full bg-error/40 w-[12%]"></div>
+                    </div>
+                </div>
+                <div
+                    class="flex items-center justify-between pt-4 border-t border-white/5 opacity-60 group-hover:opacity-100 transition-opacity">
+                    <div class="text-[10px] text-error font-bold uppercase tracking-widest">Critical Alert</div>
+                    <span class="material-symbols-outlined text-lg text-error">warning</span>
+                </div>
+            </div>
+        </section>
+    </main>
+    <!-- Footer -->
+    <footer class="bg-black border-t border-white/5 w-full py-20 px-12">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12">
+            <div class="flex flex-col gap-6">
+                <span class="text-3xl font-bold tracking-tighter text-white font-headline cursor-pointer"
+                    onclick="location.href='index.html'">Sylk</span>
+                <p class="max-w-xs text-on-surface-variant text-sm leading-relaxed">The global compute platform for
+                    high-performance applications. Engineered for the next generation of the web.</p>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-12 md:gap-16">
+                <div class="flex flex-col gap-4">
+                    <span class="text-white font-bold text-sm tracking-tight">Product</span>
+                    <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Features</a>
+                    <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Pricing</a>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <span class="text-white font-bold text-sm tracking-tight">Resources</span>
+                    <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Docs</a>
+                    <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Status</a>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <span class="text-white font-bold text-sm tracking-tight">Legal</span>
+                    <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Privacy</a>
+                    <a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Terms</a>
+                </div>
+            </div>
+        </div>
+        <div
+            class="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p class="font-['Space_Grotesk'] text-[0.7rem] uppercase tracking-widest text-outline">© 2026 Sylk Kinetic
+                Systems Inc.</p>
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span class="text-[0.7rem] font-['Space_Grotesk'] uppercase tracking-widest text-outline">All Systems
+                    Operational</span>
+            </div>
+        </div>
+    </footer>
 </body>
+
 </html>

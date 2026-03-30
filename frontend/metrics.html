@@ -88,13 +88,67 @@
         .glass-card {
             background: rgba(17, 17, 17, 0.4);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.10);
         }
 
         .hero-glow {
             background: radial-gradient(circle at top right, rgba(124, 58, 237, 0.08) 0%, transparent 60%);
         }
+
+        /* Bumped secondary text legibility to 65% */
+        .text-on-surface-variant {
+            color: rgba(255, 255, 255, 0.65) !important;
+        }
+
+        /* Active nav glow */
+        nav a.nav-active {
+            color: #fff;
+            text-shadow: 0 0 12px rgba(210, 187, 255, 0.7);
+            border-bottom: 2px solid #d2bbff;
+            padding-bottom: 2px;
+        }
+
+        /* Chart bar hover: dim siblings, lift hovered */
+        .chart-bar {
+            transition: opacity 0.15s ease, transform 0.15s ease;
+            cursor: pointer;
+        }
+
+        .chart-bar-group:hover .chart-bar {
+            opacity: 0.35;
+        }
+
+        .chart-bar-group:hover .chart-bar:hover {
+            opacity: 1 !important;
+            transform: scaleY(1.03);
+            transform-origin: bottom;
+        }
+
+        /* Floating tooltip */
+        .bar-tooltip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffffff;
+            color: #000000;
+            font-size: 10px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            z-index: 10;
+        }
+
+        .chart-bar:hover .bar-tooltip {
+            opacity: 1;
+        }
     </style>
+
     <script src="js/session.js"></script>
     <script src="js/api.js"></script>
 </head>
@@ -115,8 +169,7 @@
                         href="projects.html">Projects</a>
                     <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight"
                         href="logs.html">Logs</a>
-                    <a class="text-white font-medium text-sm tracking-tight border-b-2 border-primary pb-1"
-                        href="metrics.html">Usage</a>
+                    <a class="text-white font-medium text-sm tracking-tight nav-active" href="metrics.html">Usage</a>
                 </div>
             </div>
             <div class="flex items-center gap-6">
@@ -132,13 +185,21 @@
                     class="material-symbols-outlined text-on-surface-variant hover:text-white transition-colors">notifications</button>
                 <button
                     class="bg-white text-black px-6 py-2 rounded-full text-sm font-bold hover:bg-white/90 transition-all active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
-                    onclick="location.href='auth.html'">Login / Sign Up</button>
+                    onclick="location.href='auth.html'">Login</button>
             </div>
         </div>
     </nav>
 
     <main class="relative pt-32 pb-20 px-8 max-w-7xl mx-auto min-h-screen">
         <div class="absolute inset-0 z-0 hero-glow pointer-events-none"></div>
+        <!-- Breadcrumb -->
+        <nav class="relative z-10 flex items-center gap-2 text-xs font-label text-outline mb-10">
+            <a href="index.html" class="hover:text-white transition-colors">Home</a>
+            <span class="material-symbols-outlined text-sm">chevron_right</span>
+            <a href="projects.html" class="hover:text-white transition-colors">Projects</a>
+            <span class="material-symbols-outlined text-sm">chevron_right</span>
+            <span class="text-white font-bold">Usage</span>
+        </nav>
         <!-- Header Section -->
         <header class="relative z-10 mb-16 flex flex-col md:flex-row md:items-end justify-between gap-8">
             <div class="space-y-4">
@@ -172,10 +233,9 @@
         <section class="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <!-- Average Latency -->
             <div onclick="location.href='logs.html'"
-                class="bg-surface-container-low rounded-2xl p-8 border border-white/5 flex flex-col justify-between h-48 hover:border-primary/40 cursor-pointer transition-all group">
+                class="bg-surface-container-low rounded-2xl p-8 border border-white/10 flex flex-col justify-between h-48 hover:border-primary/50 cursor-pointer transition-all group shadow-lg">
                 <div class="flex justify-between items-start">
-                    <span class="font-label text-[10px] font-bold text-primary tracking-widest uppercase">Avg
-                        Latency</span>
+                    <span class="font-label text-xs font-bold text-primary tracking-widest uppercase">Avg Latency</span>
                     <span class="material-symbols-outlined text-primary text-xl">speed</span>
                 </div>
                 <div>
@@ -184,13 +244,14 @@
                             class="text-5xl font-bold tracking-tight text-white font-headline">-</span>
                         <span class="text-lg font-medium text-on-surface-variant">ms</span>
                     </div>
+                    <p class="text-xs text-on-surface-variant mt-1">↓ 12% vs last hour</p>
                 </div>
             </div>
             <!-- Request Rate -->
             <div onclick="location.href='logs.html'"
-                class="bg-surface-container-low rounded-2xl p-8 border border-white/5 flex flex-col justify-between h-48 hover:border-secondary/40 cursor-pointer transition-all group">
+                class="bg-surface-container-low rounded-2xl p-8 border border-white/10 flex flex-col justify-between h-48 hover:border-secondary/50 cursor-pointer transition-all group shadow-lg">
                 <div class="flex justify-between items-start">
-                    <span class="font-label text-[10px] font-bold text-secondary tracking-widest uppercase">Total
+                    <span class="font-label text-xs font-bold text-secondary tracking-widest uppercase">Total
                         Tasks</span>
                     <span class="material-symbols-outlined text-secondary text-xl">dynamic_feed</span>
                 </div>
@@ -199,14 +260,14 @@
                         <span id="metric-tasks"
                             class="text-5xl font-bold tracking-tight text-white font-headline">-</span>
                     </div>
+                    <p class="text-xs text-on-surface-variant mt-1">↑ 8% increase today</p>
                 </div>
             </div>
             <!-- Error Rate -->
             <div onclick="location.href='logs.html'"
-                class="md:col-span-2 bg-surface-container-low rounded-2xl p-8 border border-error/20 flex flex-col justify-between h-48 relative overflow-hidden group hover:border-error/40 cursor-pointer transition-all">
+                class="md:col-span-2 bg-surface-container-low rounded-2xl p-8 border border-error/30 flex flex-col justify-between h-48 relative overflow-hidden group hover:border-error/60 cursor-pointer transition-all shadow-lg">
                 <div class="relative z-10 flex justify-between items-start">
-                    <span class="font-label text-[10px] font-bold text-error tracking-widest uppercase">Error
-                        Rate</span>
+                    <span class="font-label text-xs font-bold text-error tracking-widest uppercase">Error Rate</span>
                     <span class="material-symbols-outlined text-error text-xl">error_outline</span>
                 </div>
                 <div class="relative z-10">
@@ -215,20 +276,67 @@
                             class="text-5xl font-bold tracking-tight text-white font-headline">-</span>
                         <span class="text-lg font-medium text-on-surface-variant">%</span>
                     </div>
+                    <p class="text-xs text-on-surface-variant mt-1">Below 0.1% threshold — healthy</p>
                 </div>
             </div>
         </section>
 
-        <!-- Main Performance Graph Placeholder -->
-        <section class="relative z-10 bg-surface-container-low rounded-2xl border border-white/5 p-8 mb-8 h-[400px]">
-            <h3 class="text-xl font-bold text-white font-headline mb-6">Response Time Distribution</h3>
-            <div class="flex items-end gap-2 h-64 px-4 border-l border-b border-white/10">
-                <div class="flex-1 bg-primary/20 h-[30%] rounded-t-sm"></div>
-                <div class="flex-1 bg-primary/30 h-[45%] rounded-t-sm"></div>
-                <div class="flex-1 bg-primary/40 h-[60%] rounded-t-sm"></div>
-                <div class="flex-1 bg-primary/60 h-[80%] rounded-t-sm shadow-[0_0_15px_rgba(210,187,255,0.3)]"></div>
-                <div class="flex-1 bg-primary/40 h-[65%] rounded-t-sm"></div>
-                <div class="flex-1 bg-primary/20 h-[40%] rounded-t-sm"></div>
+        <!-- Response Time Distribution Chart -->
+        <section class="relative z-10 bg-surface-container-low rounded-2xl border border-white/10 p-8 mb-8 shadow-lg">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-white font-headline">Response Time Distribution</h3>
+                    <p class="text-xs text-on-surface-variant mt-1">Latency buckets over the last 6 hours — p50 / p95 /
+                        p99</p>
+                </div>
+                <!-- Legend -->
+                <div class="flex items-center gap-6">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-primary/60"></span>
+                        <span class="text-xs font-label text-on-surface-variant uppercase tracking-wider">p50</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+                        <span class="text-xs font-label text-on-surface-variant uppercase tracking-wider">p99
+                            peak</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Chart -->
+            <div class="chart-bar-group flex items-end gap-3 h-52 border-l border-b border-white/10 px-4 pt-4 relative">
+                <div class="chart-bar relative flex-1 bg-primary/20 hover:bg-primary/60 rounded-t-sm"
+                    style="height:30%">
+                    <span class="bar-tooltip">12ms</span>
+                </div>
+                <div class="chart-bar relative flex-1 bg-primary/30 hover:bg-primary/60 rounded-t-sm"
+                    style="height:45%">
+                    <span class="bar-tooltip">28ms</span>
+                </div>
+                <div class="chart-bar relative flex-1 bg-primary/40 hover:bg-primary/70 rounded-t-sm"
+                    style="height:60%">
+                    <span class="bar-tooltip">42ms</span>
+                </div>
+                <div class="chart-bar relative flex-1 bg-primary/60 hover:bg-primary/80 rounded-t-sm shadow-[0_0_15px_rgba(210,187,255,0.3)]"
+                    style="height:80%">
+                    <span class="bar-tooltip">58ms ↑ peak</span>
+                </div>
+                <div class="chart-bar relative flex-1 bg-primary/40 hover:bg-primary/70 rounded-t-sm"
+                    style="height:65%">
+                    <span class="bar-tooltip">47ms</span>
+                </div>
+                <div class="chart-bar relative flex-1 bg-primary/20 hover:bg-primary/60 rounded-t-sm"
+                    style="height:40%">
+                    <span class="bar-tooltip">31ms</span>
+                </div>
+            </div>
+            <!-- X-Axis Labels -->
+            <div class="flex gap-3 px-4 mt-2">
+                <span class="flex-1 text-center text-[10px] font-label text-outline uppercase tracking-wider">-6h</span>
+                <span class="flex-1 text-center text-[10px] font-label text-outline uppercase tracking-wider">-5h</span>
+                <span class="flex-1 text-center text-[10px] font-label text-outline uppercase tracking-wider">-4h</span>
+                <span class="flex-1 text-center text-[10px] font-label text-outline uppercase tracking-wider">-3h</span>
+                <span class="flex-1 text-center text-[10px] font-label text-outline uppercase tracking-wider">-2h</span>
+                <span class="flex-1 text-center text-[10px] font-label text-outline uppercase tracking-wider">Now</span>
             </div>
         </section>
     </main>
@@ -238,14 +346,18 @@
             <div>
                 <span class="text-3xl font-bold tracking-tighter text-white font-headline cursor-pointer"
                     onclick="location.href='index.html'">Sylk</span>
-                <p class="max-w-xs text-on-surface-variant text-sm leading-relaxed mt-4">The global compute platform for high-performance applications. Engineered for the next generation of the web.</p>
+                <p class="max-w-xs text-on-surface-variant text-sm leading-relaxed mt-4">The global compute platform for
+                    high-performance applications. Engineered for the next generation of the web.</p>
             </div>
         </div>
-        <div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p class="font-['Space_Grotesk'] text-[0.7rem] uppercase tracking-widest text-outline">© 2024 Sylk Kinetic Systems Inc.</p>
+        <div
+            class="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p class="font-['Space_Grotesk'] text-[0.7rem] uppercase tracking-widest text-outline">© 2026
+                Sylk Kinetic Systems Inc.</p>
             <div class="flex items-center gap-2">
                 <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span class="text-[0.7rem] font-['Space_Grotesk'] uppercase tracking-widest text-outline">All Systems Operational</span>
+                <span class="text-[0.7rem] font-['Space_Grotesk'] uppercase tracking-widest text-outline">All Systems
+                    Operational</span>
             </div>
         </div>
     </footer>
@@ -263,4 +375,5 @@
         });
     </script>
 </body>
+
 </html>
