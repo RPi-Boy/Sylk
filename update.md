@@ -19,7 +19,7 @@ This document outlines the specific tasks and technical specifications for the D
 ## 2. Hardened Sandboxing Configuration
 **Goal:** Ensure that user-provided code runs in a strictly isolated environment without network or filesystem access.
 
-*   [ ] **Define `docker run` execution flags:**
+*   [x] **Define `docker run` execution flags:**
     *   `--network none`: Completely disable networking to prevent data exfiltration.
     *   `--read-only`: Mount the container's root filesystem as read-only to prevent persistent malware.
     *   `--memory 512m`: Implement a hard memory limit to prevent RAM exhaustion and Host OS crashes.

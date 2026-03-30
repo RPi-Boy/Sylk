@@ -3,6 +3,17 @@ import redis
 import os
 import json
 import subprocess
+import docker
+
+# --- Hardened Sandboxing Configuration (Section 2) ---
+# strict execution flags for all user-provided tasks
+SANDBOX_CONFIG = {
+    "network_mode": "none",    # Completely disable networking
+    "read_only": True,         # Make root filesystem immutable
+    "mem_limit": "512m",       # Hard memory ceiling
+    "labels": {"sylk": "true"} # Identifying label for managing orphans
+}
+
 from watchdog import Watchdog
 
 # REDIS_URL from env or default
