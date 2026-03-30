@@ -28,18 +28,19 @@ This document outlines the specific tasks and technical specifications for the D
 ## 3. Warm Pool & Lifecycle Management
 **Goal:** Maintain instantaneous execution times by managing a pool of pre-warmed idle containers and handling cleanup dynamically.
 
-*   [ ] **Warm Pool Manager:** Develop the logic to spin up and maintain $N$ idling sandbox containers.
-*   [ ] **Zombie Reaper:** Implement a startup cleanup function to catch crashed daemon orphans.
+*   [x] **Warm Pool Manager:** Develop the logic to spin up and maintain $N$ idling sandbox containers. (Python-first pre-warming).
+*   [x] **Zombie Reaper:** Implement a startup cleanup function to catch crashed daemon orphans. (Integrated into `worker.py` via `docker-py` filters).
     *   **Command Spec:** `docker rm -f $(docker ps -a -q --filter "label=sylk")`
-*   [ ] **Node Agent Orchestration (`node-agent/worker.py`):** Use `docker-py` to implement the container lifecycle API (pull, start pre-warmed, exec code, return result, teardown/recycle).
+*   [x] **Node Agent Orchestration (`node-agent/worker.py`):** Use `docker-py` to implement the container lifecycle API. (Finalized with Hybrid Loopback Execution).
 
 ## 4. Control Plane Infrastructure
 **Goal:** Containerize the Control Plane dependencies for easy local testing.
 
-*   [ ] **Control Plane Compose (`control-plane/docker-compose.yml`):**
+*   [x] **Control Plane Compose (`control-plane/docker-compose.yml`):**
     *   Define a service for the FastAPI application (matching `app/main.py`).
     *   Define a service for the Redis instance (the task queue).
     *   Ensure appropriate volume mapping for the `sylk_analytics.db` persistent SQLite log.
+*   [x] **Control Plane Runtime (`control-plane/Dockerfile`):** Production-ready multi-worker uvicorn image.
 
 ---
 *Note: Any updates to the required container specs or security flags must be logged in this document before implementation.*

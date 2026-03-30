@@ -34,6 +34,7 @@ docker_client = docker.from_env()
 
 watchdog = Watchdog(threshold=config.get("max_cpu_threshold", 80.0))
 warm_pool = []
+pool_lock = threading.Lock()
 
 def reap_zombies():
     print("Reaping zombie containers...")
@@ -45,22 +46,30 @@ def reap_zombies():
     except Exception as e:
         print(f"Error reaping zombies: {e}")
 
-def start_warm_container():
-    image = f"sylk-runtime:{ARCH}"
+def start_warm_container(lang="python"):
+    # Correctly identify images built by build_all.sh: sylk-{lang}-runtime:{arch}
+    image = f"sylk-{lang}-runtime:{ARCH}"
     try:
         container = docker_client.containers.run(
             image,
             detach=True,
+            command=["tail", "-f", "/dev/null"], # Keep alive for exec
             **SANDBOX_CONFIG
         )
-        warm_pool.append(container)
-        print(f"Warmed up new container: {container.id[:12]}")
+        with pool_lock:
+            warm_pool.append({"container": container, "lang": lang})
+        print(f"Warmed up new {lang} container: {container.id[:12]}")
     except Exception as e:
-        print(f"Failed to start warm container: {e}. Check if image {image} exists.")
+        print(f"Failed to start warm {lang} container: {e}. Check if image {image} exists.")
 
 def maintain_warm_pool():
-    while len(warm_pool) < WARM_POOL_SIZE:
-        start_warm_container()
+    # Maintain WARM_POOL_SIZE safely 
+    while True:
+        with pool_lock:
+            current_count = len([c for c in warm_pool if c["lang"] == "python"])
+        if current_count >= WARM_POOL_SIZE:
+            break
+        start_warm_container("python")
 
 QUEUE_NAME = f"q_{ARCH}"
 
@@ -91,48 +100,46 @@ def heartbeat_loop():
         time.sleep(30)
 
 def execute_task(task_data):
-    if not warm_pool:
-        start_warm_container()
-        if not warm_pool:
-            print("No warm containers available.")
-            return False
-
-    container = warm_pool.pop(0)
-    threading.Thread(target=start_warm_container, daemon=True).start()
-
-    code = task_data.get("code", "")
-    task_id = task_data.get("task_id", "unknown")
     language = task_data.get("language", "python")
+    task_id = task_data.get("task_id", "unknown")
+    code = task_data.get("code", "")
+
+    # Thread-safe extraction: Try to find a pre-warmed container for the language
+    container_info = None
+    with pool_lock:
+        container_info = next((c for c in warm_pool if c["lang"] == language), None)
+        if container_info:
+            warm_pool.remove(container_info)
     
-    print(f"Executing task {task_id} on container {container.id[:12]}")
+    if container_info:
+        container = container_info["container"]
+        # Trigger background refill for the primary language if needed
+        if language == "python":
+            threading.Thread(target=maintain_warm_pool, daemon=True).start()
+    else:
+        # Fallback to cold start if no warm container matches language
+        print(f"No warm {language} container available. Cold starting...")
+        start_warm_container(language)
+        with pool_lock:
+            if not warm_pool:
+                print("Failed to start container for execution.")
+                return False
+            container_info = warm_pool.pop()
+            container = container_info["container"]
+
+    print(f"Executing task {task_id} ({language}) on container {container.id[:12]}")
     
     try:
         payload_json = json.dumps({"code": code})
-        encoded_payload = json.dumps(payload_json) # safely escaped string
+        encoded_payload = json.dumps(payload_json) # safely escaped JSON string for shell
         
+        # Hybrid Loopback Strategy (Aarav's Suggestion):
+        # We exec a script INSIDE the network-less container to hit localhost:5000
         if language == "python":
-            py_script = f"""
-import urllib.request, json
-req = urllib.request.Request(
-    'http://localhost:5000/exec', 
-    data={encoded_payload}.encode('utf-8'),
-    headers={{'Content-Type': 'application/json'}}
-)
-try:
-    with urllib.request.urlopen(req) as response:
-        print(response.read().decode('utf-8'))
-except Exception as e:
-    print(str(e))
-"""
+            py_script = f"import urllib.request; req=urllib.request.Request('http://localhost:5000/exec', data={encoded_payload}.encode('utf-8'), headers={{'Content-Type': 'application/json'}}); print(urllib.request.urlopen(req).read().decode('utf-8'))"
             exec_command = ["python", "-c", py_script]
         elif language == "node":
-            node_script = f"""
-fetch('http://localhost:5000/exec', {{
-    method: 'POST', 
-    headers: {{'Content-Type': 'application/json'}}, 
-    body: {encoded_payload}
-}}).then(r=>r.text()).then(console.log).catch(console.error);
-"""
+            node_script = f"fetch('http://localhost:5000/exec', {{method: 'POST', headers: {{'Content-Type': 'application/json'}}, body: {encoded_payload}}}).then(r=>r.text()).then(console.log)"
             exec_command = ["node", "-e", node_script]
         else:
             print(f"Unsupported language: {language}")
@@ -143,7 +150,7 @@ fetch('http://localhost:5000/exec', {{
         result_str = output.decode("utf-8").strip()
         print(f"Task {task_id} result: {result_str}")
         
-        # Simple ACK: store result in Redis
+        # Store result in Redis (Final Acknowledgment)
         r.set(f"result:{task_id}", result_str, ex=3600)
         return True
         
@@ -151,6 +158,7 @@ fetch('http://localhost:5000/exec', {{
         print(f"Execution failed for {task_id}: {e}")
         return False
     finally:
+        # Containers are effectively single-use for total isolation
         container.remove(force=True)
 
 if __name__ == "__main__":
