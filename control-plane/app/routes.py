@@ -10,7 +10,7 @@ from typing import List
 from sse_starlette.sse import EventSourceResponse
 
 from . import schemas
-from .database import SessionLocal, TaskRecord, TaskStatusEnum
+from .database import SessionLocal, TaskRecord, TaskStatusEnum, FunctionRecord
 from .scheduler import queue_task, r
 from . import auth
 
@@ -56,14 +56,12 @@ async def login(user: auth.UserLogin):
     if not db_user or not auth.verify_password(user.password, db_user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
-    # Generate session token
     token = str(uuid.uuid4())
-    # Session expires in 24 hours
     r.setex(f"session:{token}", 86400, db_user["email"]) 
     
     return {"token": token, "email": db_user["email"], "username": db_user["username"]}
 
-# --- Task Endpoints (Frontend API) ---
+# --- Legacy Task Endpoints (Frontend deploy page) ---
 @router.post("/tasks", response_model=schemas.TaskOut)
 async def create_task(task: schemas.TaskIn, db: Session = Depends(get_db)):
     task_id = str(uuid.uuid4())
@@ -76,7 +74,7 @@ async def create_task(task: schemas.TaskIn, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_task)
 
-    queue_task(task_id, task.code, pref, task.language)
+    queue_task(task_id, task.code, language=task.language)
     r.publish("sylk_events", json.dumps({"event": "task_queued", "task_id": task_id, "language": task.language}))
     return schemas.TaskOut(task_id=task_id, status=schemas.TaskStatus.QUEUED)
 
@@ -91,10 +89,193 @@ async def get_task(task_id: str, db: Session = Depends(get_db)):
         result=db_task.result, node_id=db_task.node_id, latency_ms=db_task.latency_ms
     )
 
+# ==========================================
+# FaaS API — Function Management
+# ==========================================
+
+@router.post("/functions", response_model=schemas.FunctionOut)
+async def deploy_function(fn: schemas.FunctionCreate, db: Session = Depends(get_db)):
+    """Deploy a new function. Creates a persistent endpoint at /fn/{slug}."""
+    # Validate language
+    if fn.language not in ("python", "node"):
+        raise HTTPException(status_code=400, detail="Language must be 'python' or 'node'")
+    
+    # Validate slug uniqueness
+    existing = db.query(FunctionRecord).filter(FunctionRecord.slug == fn.slug).first()
+    if existing:
+        raise HTTPException(status_code=409, detail=f"Function with slug '{fn.slug}' already exists")
+    
+    function_id = str(uuid.uuid4())
+    db_fn = FunctionRecord(
+        function_id=function_id,
+        slug=fn.slug,
+        language=fn.language,
+        code=fn.code,
+    )
+    db.add(db_fn)
+    db.commit()
+    db.refresh(db_fn)
+
+    r.publish("sylk_events", json.dumps({
+        "event": "function_deployed",
+        "function_id": function_id,
+        "slug": fn.slug,
+        "language": fn.language
+    }))
+
+    return schemas.FunctionOut(
+        function_id=function_id,
+        slug=fn.slug,
+        language=fn.language,
+        endpoint=f"/fn/{fn.slug}",
+        created_at=str(db_fn.created_at)
+    )
+
+@router.get("/functions", response_model=List[schemas.FunctionOut])
+async def list_functions(db: Session = Depends(get_db)):
+    """List all deployed functions."""
+    fns = db.query(FunctionRecord).all()
+    return [
+        schemas.FunctionOut(
+            function_id=f.function_id,
+            slug=f.slug,
+            language=f.language,
+            endpoint=f"/fn/{f.slug}",
+            created_at=str(f.created_at)
+        )
+        for f in fns
+    ]
+
+@router.get("/functions/{slug}")
+async def get_function(slug: str, db: Session = Depends(get_db)):
+    """Get details of a deployed function by slug."""
+    fn = db.query(FunctionRecord).filter(FunctionRecord.slug == slug).first()
+    if not fn:
+        raise HTTPException(status_code=404, detail=f"Function '{slug}' not found")
+    return schemas.FunctionOut(
+        function_id=fn.function_id,
+        slug=fn.slug,
+        language=fn.language,
+        endpoint=f"/fn/{fn.slug}",
+        created_at=str(fn.created_at)
+    )
+
+# ==========================================
+# FaaS API — Function Invocation
+# ==========================================
+
+@router.post("/fn/{slug}")
+async def invoke_function(slug: str, body: schemas.FunctionInvoke, db: Session = Depends(get_db)):
+    """
+    Invoke a deployed function synchronously.
+    Blocks up to 30s waiting for the worker result via callback.
+    """
+    # 1. Look up the function
+    fn = db.query(FunctionRecord).filter(FunctionRecord.slug == slug).first()
+    if not fn:
+        raise HTTPException(status_code=404, detail=f"Function '{slug}' not found")
+    
+    # 2. Create a task record
+    task_id = str(uuid.uuid4())
+    db_task = TaskRecord(
+        task_id=task_id,
+        function_id=fn.function_id,
+        code=fn.code,
+        hardware_pref="default",
+        status=TaskStatusEnum.QUEUED
+    )
+    db.add(db_task)
+    db.commit()
+
+    # 3. Build callback URL (workers will POST results here)
+    callback_url = f"/callback/{task_id}"
+
+    # 4. Push to the language-specific queue
+    queue_name = queue_task(
+        task_id=task_id,
+        code=fn.code,
+        language=fn.language,
+        callback_url=callback_url,
+        params=body.params
+    )
+
+    r.publish("sylk_events", json.dumps({
+        "event": "task_queued",
+        "task_id": task_id,
+        "language": fn.language,
+        "slug": fn.slug
+    }))
+
+    # 5. Block waiting for result (worker will RPUSH to result_ready:{task_id})
+    timeout = 30
+    result_key = f"result_ready:{task_id}"
+    result = r.blpop(result_key, timeout=timeout)
+
+    if result is None:
+        # Timeout — update task status
+        db_task_ref = db.query(TaskRecord).filter(TaskRecord.task_id == task_id).first()
+        if db_task_ref:
+            db_task_ref.status = TaskStatusEnum.FAILED
+            db_task_ref.result = "Timeout: No worker responded within 30s"
+            db.commit()
+        raise HTTPException(status_code=504, detail="Function execution timed out (30s)")
+
+    # 6. Parse the result
+    _, result_data = result
+    result_payload = json.loads(result_data.decode("utf-8"))
+
+    return {
+        "task_id": task_id,
+        "function": slug,
+        "status": result_payload.get("status", "done"),
+        "output": result_payload.get("result", ""),
+        "node_id": result_payload.get("node_id", "unknown")
+    }
+
+# ==========================================
+# Worker Callback Endpoint
+# ==========================================
+
+@router.post("/callback/{task_id}")
+async def worker_callback(task_id: str, body: schemas.TaskResultCallback, db: Session = Depends(get_db)):
+    """
+    Workers POST results here after execution.
+    This unblocks the /fn/{slug} handler waiting on BLPOP.
+    """
+    # Update task record in DB
+    db_task = db.query(TaskRecord).filter(TaskRecord.task_id == task_id).first()
+    if db_task:
+        db_task.status = TaskStatusEnum.DONE if body.status == "done" else TaskStatusEnum.FAILED
+        db_task.result = body.result
+        db_task.node_id = body.node_id
+        db.commit()
+    
+    # Store result in Redis for backward compat
+    r.set(f"result:{task_id}", body.result, ex=3600)
+
+    # Signal the blocked invoke handler
+    signal_payload = json.dumps({
+        "task_id": task_id,
+        "result": body.result,
+        "node_id": body.node_id,
+        "status": body.status
+    })
+    r.rpush(f"result_ready:{task_id}", signal_payload)
+    # Auto-expire the signal key after 60s
+    r.expire(f"result_ready:{task_id}", 60)
+
+    # Broadcast event
+    r.publish("sylk_events", json.dumps({
+        "event": f"task_{'completed' if body.status == 'done' else 'failed'}",
+        "task_id": task_id,
+        "node_id": body.node_id
+    }))
+
+    return {"status": "received"}
+
 # --- Node Endpoints (Internal / Daemon Hook) ---
 @router.post("/register")
 async def register_node(node: schemas.NodeRegister):
-    # Store Node Info in Redis globally for telemetry
     r.hset(f"node:{node.node_id}", mapping={
         "hostname": node.hostname,
         "hardware_type": node.hardware_type.value,
@@ -113,7 +294,6 @@ async def node_heartbeat(heartbeat: schemas.NodeHeartbeat):
         r.hset(node_key, "status", "busy" if heartbeat.is_busy else "idle")
         r.hset(node_key, "cpu_usage", str(heartbeat.cpu_usage))
         r.hset(node_key, "memory_usage", str(heartbeat.memory_usage))
-        # Autocleanup if node goes dark for 60 seconds
         r.expire(node_key, 60)
     return {"status": "alive"}
 
@@ -155,13 +335,8 @@ async def get_analytics(db: Session = Depends(get_db), current_user: str = Depen
 
 @router.get("/telemetry")
 async def get_telemetry(request: Request):
-    # SSE does not natively support custom headers in all browsers (like Bearer tokens).
-    # Typically this is handled via a URL token query param.
-    # We will enforce token validation if 'token' is provided in query params.
     token = request.query_params.get("token")
-    # Enforce token validation removed for demo mode
-    # if not token or not r.get(f"session:{token}"):
-    #     raise HTTPException(status_code=401, detail="Invalid token for SSE channel")
+    # Auth removed for demo mode
 
     async def event_generator():
         pubsub = r.pubsub()

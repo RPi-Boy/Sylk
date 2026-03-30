@@ -1,3 +1,9 @@
+"""
+DEPRECATED: This generic worker is superseded by the dedicated workers:
+  - python_worker.py (listens on q_python)
+  - node_worker.py   (listens on q_node)
+Use those instead. This file is kept for reference only.
+"""
 import time
 import redis
 import os

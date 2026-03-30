@@ -29,7 +29,8 @@ watchdog = Watchdog(threshold=config.get("max_cpu_threshold", 80.0))
 warm_pool = []
 pool_lock = threading.Lock()
 
-QUEUE_NAME = f"q_{ARCH}"
+# --- HARDCODED QUEUE NAME: language-specific ---
+QUEUE_NAME = "q_python"
 
 def reap_zombies():
     try:
@@ -72,10 +73,13 @@ def get_container():
 def execute_task(task):
     task_id = task.get("task_id", "unknown")
     code = task.get("code", "")
+    params = task.get("params", {})
+    callback_url = task.get("callback_url", "")
     container = get_container()
     if not container:
         print(f"No container available for {task_id}")
         r.publish("sylk_events", json.dumps({"event": "task_error", "task_id": task_id, "node_id": NODE_ID, "error": "No container available"}))
+        post_callback(callback_url, task_id, "No container available", "failed")
         return False
 
     # Refill pool in background
@@ -84,7 +88,11 @@ def execute_task(task):
     r.publish("sylk_events", json.dumps({"event": "task_executing", "task_id": task_id, "node_id": NODE_ID}))
 
     try:
-        b64 = base64.b64encode(code.encode()).decode()
+        # Inject params into code as a variable: params = {...}
+        params_json = json.dumps(params)
+        injected_code = f"import json\nparams = json.loads('{params_json}')\n{code}"
+
+        b64 = base64.b64encode(injected_code.encode()).decode()
         script = (
             f"import urllib.request, json, base64; "
             f"c=base64.b64decode('{b64}').decode(); "
@@ -107,30 +115,45 @@ def execute_task(task):
         if "exec failed" in result or "executable file not found" in result:
             r.publish("sylk_events", json.dumps({"event": "task_error", "task_id": task_id, "node_id": NODE_ID, "error": result[:200]}))
             r.set(f"result:{task_id}", result, ex=3600)
+            post_callback(callback_url, task_id, result, "failed")
             return False
 
         r.set(f"result:{task_id}", result, ex=3600)
+        post_callback(callback_url, task_id, result, "done")
         return True
     except Exception as e:
         print(f"Exec failed [{task_id}]: {e}")
         r.publish("sylk_events", json.dumps({"event": "task_error", "task_id": task_id, "node_id": NODE_ID, "error": str(e)[:200]}))
+        post_callback(callback_url, task_id, str(e), "failed")
         return False
     finally:
         container.remove(force=True)
 
+
+def post_callback(callback_url, task_id, result, status):
+    """POST the result back to the control plane callback endpoint."""
+    if not callback_url:
+        return
+    try:
+        full_url = f"{CONTROL_PLANE_URL}{callback_url}"
+        payload = {
+            "task_id": task_id,
+            "result": result,
+            "node_id": NODE_ID,
+            "status": status
+        }
+        resp = requests.post(full_url, json=payload, timeout=10)
+        print(f"Callback [{task_id}] -> {resp.status_code}")
+    except Exception as e:
+        print(f"Callback failed [{task_id}]: {e}")
+
+
 def poll_tasks():
-    """Use BLPOP instead of deprecated BRPOPLPUSH for Redis 7+ compat."""
+    """BLPOP from q_python — only Python tasks arrive here."""
     result = r.blpop(QUEUE_NAME, timeout=POLLING_INTERVAL)
     if result:
         _, raw = result
         task = json.loads(raw)
-        lang = task.get("language", "python")
-
-        # Only process Python tasks; requeue others
-        if lang != "python":
-            print(f"Requeuing non-python task {task.get('task_id')}")
-            r.rpush(QUEUE_NAME, raw)
-            return
 
         event_picked_up = {"event": "task_picked_up", "task_id": task.get("task_id"), "node_id": NODE_ID}
         r.publish("sylk_events", json.dumps(event_picked_up))
@@ -142,8 +165,6 @@ def poll_tasks():
         else:
             event_failed = {"event": "task_failed", "task_id": task.get("task_id"), "node_id": NODE_ID}
             r.publish("sylk_events", json.dumps(event_failed))
-            print(f"Requeuing failed task {task.get('task_id')}")
-            r.rpush(QUEUE_NAME, raw)
 
 def heartbeat_loop():
     while True:
@@ -151,7 +172,8 @@ def heartbeat_loop():
         time.sleep(30)
 
 if __name__ == "__main__":
-    print(f"=== Sylk Python Worker [{NODE_ID}] (Arch: {ARCH}) ===")
+    print(f"=== Sylk Python Worker [{NODE_ID}] ===")
+    print(f"Queue: {QUEUE_NAME} | Control Plane: {CONTROL_PLANE_URL}")
     if not register(CONTROL_PLANE_URL, NODE_ID):
         print("Warning: Registration failed. Proceeding anyway.")
 

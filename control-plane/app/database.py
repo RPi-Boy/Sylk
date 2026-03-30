@@ -1,7 +1,8 @@
-from sqlalchemy import create_engine, Column, String, Float, Enum as SQLEnum
+from sqlalchemy import create_engine, Column, String, Float, DateTime, Enum as SQLEnum, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import enum
+import datetime
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./sylk_analytics.db"
 
@@ -19,10 +20,20 @@ class TaskStatusEnum(str, enum.Enum):
     DONE = "done"
     FAILED = "failed"
 
+class FunctionRecord(Base):
+    __tablename__ = "functions"
+
+    function_id = Column(String, primary_key=True, index=True)
+    slug = Column(String, unique=True, index=True, nullable=False)
+    language = Column(String, nullable=False)  # "python" or "node"
+    code = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
 class TaskRecord(Base):
     __tablename__ = "tasks"
 
     task_id = Column(String, primary_key=True, index=True)
+    function_id = Column(String, ForeignKey("functions.function_id"), nullable=True)
     code = Column(String)
     hardware_pref = Column(String)
     status = Column(SQLEnum(TaskStatusEnum), default=TaskStatusEnum.QUEUED)
