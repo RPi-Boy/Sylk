@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Sylk | Function Logs</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        /* Custom scrollbar for the terminal feel */
+        .terminal-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .terminal-scroll::-webkit-scrollbar-track {
+            background: #000000;
+        }
+        .terminal-scroll::-webkit-scrollbar-thumb {
+            background: #333333;
+            border-radius: 2px;
+        }
+        .glass-card {
+            background: rgba(17, 17, 17, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .hero-glow {
+            background: radial-gradient(circle at top right, rgba(124, 58, 237, 0.08) 0%, transparent 60%);
+        }
+    </style>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-container": "#7c3aed",
+                        "surface-container-high": "#1a1a1a",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-fixed": "#25005a",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "primary": "#d2bbff",
+                        "on-secondary": "#002e6b",
+                        "error-container": "#93000a",
+                        "inverse-primary": "#732ee4",
+                        "surface": "#000000",
+                        "tertiary-container": "#656767",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "on-secondary-fixed": "#001a43",
+                        "outline": "#958da1",
+                        "error": "#ffb4ab",
+                        "inverse-on-surface": "#303030",
+                        "on-surface": "#ededed",
+                        "on-secondary-container": "#00275e",
+                        "surface-bright": "#222222",
+                        "primary-fixed": "#eaddff",
+                        "surface-variant": "#2a2a2a",
+                        "surface-container-low": "#0a0a0a",
+                        "secondary": "#aec6ff",
+                        "surface-dim": "#050505",
+                        "tertiary-fixed": "#e2e2e2",
+                        "surface-container": "#111111",
+                        "surface-container-lowest": "#000000",
+                        "inverse-surface": "#e2e2e2",
+                        "on-tertiary": "#2f3131",
+                        "surface-tint": "#d2bbff",
+                        "on-error": "#690005",
+                        "surface-container-highest": "#333333",
+                        "on-primary-fixed-variant": "#5a00c6",
+                        "secondary-container": "#508eff",
+                        "secondary-fixed-dim": "#aec6ff",
+                        "on-background": "#ededed",
+                        "secondary-fixed": "#d8e2ff",
+                        "on-primary-container": "#ede0ff",
+                        "primary-fixed-dim": "#d2bbff",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "tertiary": "#c6c6c7",
+                        "outline-variant": "#333333",
+                        "on-tertiary-container": "#e5e6e6",
+                        "background": "#000000",
+                        "on-primary": "#3f008e",
+                        "on-surface-variant": "#a1a1a1",
+                        "on-secondary-fixed-variant": "#004397"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary/30 antialiased">
+<!-- Top Navigation -->
+<nav class="fixed top-0 w-full z-[100] bg-black/60 backdrop-blur-xl border-b border-white/5">
+<div class="flex items-center justify-between px-8 py-4 max-w-7xl mx-auto">
+<div class="flex items-center gap-10">
+<span class="text-2xl font-bold tracking-tighter text-white font-headline cursor-pointer" onclick="location.href='index.html'">Sylk</span>
+<div class="hidden md:flex gap-8 items-center">
+<a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="auth.html">Deploy</a>
+<a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="index.html">Projects</a>
+<a class="text-white font-medium text-sm tracking-tight border-b-2 border-primary pb-1" href="logs.html">Logs</a>
+<a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight" href="metrics.html">Usage</a>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden lg:flex items-center bg-surface-container-low px-3 py-1.5 rounded-lg border border-white/5">
+<span class="material-symbols-outlined text-sm text-outline mr-2">terminal</span>
+<span class="text-[10px] font-label text-outline uppercase tracking-widest">prod-function-01</span>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-white transition-colors">notifications</button>
+<button class="bg-white text-black px-5 py-2 rounded-full text-sm font-semibold hover:bg-white/90 transition-all active:scale-95" onclick="location.href='auth.html'">Ship Code</button>
+</div>
+</div>
+</nav>
+<main class="relative pt-32 pb-20 px-8 max-w-7xl mx-auto overflow-hidden">
+<div class="absolute inset-0 z-0 hero-glow"></div>
+<!-- Header Section -->
+<header class="relative z-10 mb-12">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<h1 class="text-5xl font-extrabold font-headline tracking-tight text-white mb-2">Function Logs</h1>
+<p class="text-on-surface-variant font-label text-xs uppercase tracking-widest">Environment: <span class="text-primary font-bold">Production (V2.4.0)</span></p>
+</div>
+<!-- Internal Tabs Navigation -->
+<div class="flex gap-1 bg-surface-container-low p-1 rounded-full border border-white/5">
+<button class="px-6 py-2 rounded-full text-xs font-label uppercase tracking-widest bg-surface-container-highest text-white shadow-lg">Logs</button>
+<button class="px-6 py-2 rounded-full text-xs font-label uppercase tracking-widest text-on-surface-variant hover:text-white transition-colors" onclick="location.href='metrics.html'">Metrics</button>
+<button class="px-6 py-2 rounded-full text-xs font-label uppercase tracking-widest text-on-surface-variant hover:text-white transition-colors">Settings</button>
+</div>
+</div>
+</header>
+<!-- Tool Bar / Filters -->
+<section class="relative z-10 mb-8 flex flex-wrap items-center justify-between gap-4 p-4 glass-card rounded-2xl">
+<div class="flex flex-wrap items-center gap-3">
+<!-- Filter Dropdown Level -->
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container-low border border-white/5 rounded-full text-xs font-label uppercase tracking-wider text-on-surface-variant hover:text-white hover:border-white/10 transition-all">
+<span class="material-symbols-outlined text-sm" data-icon="filter_list">filter_list</span>
+                    Level: All
+                </button>
+<!-- Filter Dropdown Time -->
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container-low border border-white/5 rounded-full text-xs font-label uppercase tracking-wider text-on-surface-variant hover:text-white hover:border-white/10 transition-all">
+<span class="material-symbols-outlined text-sm" data-icon="schedule">schedule</span>
+                    Last 15 Minutes
+                </button>
+<!-- Search Input -->
+<div class="relative min-w-[300px]">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-lg" data-icon="search">search</span>
+<input class="w-full bg-surface-container-lowest border border-white/5 focus:ring-1 focus:ring-primary/50 focus:border-primary/50 rounded-full pl-12 pr-4 py-2 text-xs text-on-surface placeholder:text-outline/50 font-label tracking-wide" placeholder="Filter logs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-5 py-2 bg-surface-container-highest/50 border border-white/5 rounded-full text-[10px] font-label uppercase tracking-widest text-secondary hover:bg-surface-container-highest transition-all">
+<span class="material-symbols-outlined text-sm">download</span>
+                    Export
+                </button>
+<button class="flex items-center gap-2 px-5 py-2 bg-primary/10 text-primary border border-primary/20 rounded-full text-[10px] font-label uppercase tracking-widest hover:bg-primary/20 transition-all">
+<span class="material-symbols-outlined text-sm animate-spin-slow">sync</span>
+                    Live Stream
+                </button>
+</div>
+</section>
+<!-- Main Terminal Glass Section -->
+<div class="relative z-10 grid grid-cols-1 lg:grid-cols-4 gap-8">
+<!-- Log Feed (3/4 width) -->
+<div class="lg:col-span-3 glass-card rounded-2xl overflow-hidden shadow-2xl flex flex-col h-[650px]">
+<!-- Terminal Header -->
+<div class="bg-surface-container-highest/30 px-6 py-4 border-b border-white/5 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="flex gap-1.5 mr-4">
+<div class="w-2.5 h-2.5 rounded-full bg-error/40 border border-error/20"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-secondary/40 border border-secondary/20"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-primary/40 border border-primary/20"></div>
+</div>
+<span class="text-[10px] font-label text-outline uppercase tracking-[0.2em]">runtime_logs.std_out</span>
+</div>
+<span class="text-[9px] font-label text-outline/60 tracking-widest uppercase">CONNECTED • 122ms LATENCY</span>
+</div>
+<!-- Terminal Content -->
+<div class="flex-1 overflow-y-auto terminal-scroll p-6 font-mono text-[13px] leading-relaxed bg-black/20">
+<div class="space-y-1 mb-4">
+<div class="flex items-start gap-4 text-on-surface-variant hover:bg-white/5 py-0.5 px-2 rounded transition-colors group">
+<span class="text-outline/40 whitespace-nowrap w-24">14:22:01.03</span>
+<span class="text-secondary font-bold uppercase w-12 text-[11px]">info</span>
+<span class="flex-1 text-on-surface/80">Function 'sylk-core-auth' started successfully on node-77x</span>
+</div>
+<div class="flex items-start gap-4 text-on-surface-variant hover:bg-white/5 py-0.5 px-2 rounded transition-colors group">
+<span class="text-outline/40 whitespace-nowrap w-24">14:22:05.11</span>
+<span class="text-secondary font-bold uppercase w-12 text-[11px]">info</span>
+<span class="flex-1 text-on-surface/80">Request context initialized: <span class="text-primary">x-request-id: 7fa-9b22</span></span>
+</div>
+<div class="flex items-start gap-4 bg-error/5 border-l-2 border-error py-2 px-2 rounded transition-colors group">
+<span class="text-error/60 whitespace-nowrap w-24">14:22:08.45</span>
+<span class="text-error font-bold uppercase w-12 text-[11px]">error</span>
+<div class="flex-1">
+<span class="text-error font-medium">DatabaseConnectionError: Connection timeout after 5000ms</span>
+<pre class="mt-2 p-3 bg-black/60 rounded text-[11px] text-error/80 border border-error/10 overflow-x-auto">at async MongoClient.connect (/var/task/node_modules/mongodb/lib/mongo_client.js:211:13)
+at async connectToDatabase (/var/task/lib/db.js:12:3)
+at async Runtime.handler (/var/task/index.js:45:5)</pre>
+</div>
+</div>
+<div class="flex items-start gap-4 text-on-surface-variant hover:bg-white/5 py-0.5 px-2 rounded transition-colors group">
+<span class="text-outline/40 whitespace-nowrap w-24">14:22:09.12</span>
+<span class="text-primary font-bold uppercase w-12 text-[11px]">warn</span>
+<span class="flex-1 text-on-surface/80 italic text-primary/70">Retrying database connection in 1.5s (Attempt 1/3)</span>
+</div>
+<div class="flex items-start gap-4 text-on-surface-variant hover:bg-white/5 py-0.5 px-2 rounded transition-colors group">
+<span class="text-outline/40 whitespace-nowrap w-24">14:22:10.88</span>
+<span class="text-secondary font-bold uppercase w-12 text-[11px]">info</span>
+<span class="flex-1 text-on-surface/80">Connection established with <span class="text-primary-fixed text-primary">cluster0.mongodb.net</span></span>
+</div>
+<div class="flex items-start gap-4 text-on-surface-variant hover:bg-white/5 py-0.5 px-2 rounded transition-colors group">
+<span class="text-outline/40 whitespace-nowrap w-24">14:22:12.22</span>
+<span class="text-secondary font-bold uppercase w-12 text-[11px]">info</span>
+<span class="flex-1 text-on-surface/80">GET /api/v1/user/profile - <span class="text-green-400">200 OK</span> (45ms)</span>
+</div>
+<div class="flex items-start gap-4 text-on-surface-variant hover:bg-white/5 py-0.5 px-2 rounded transition-colors group">
+<span class="text-outline/40 whitespace-nowrap w-24">14:23:01.03</span>
+<span class="text-secondary font-bold uppercase w-12 text-[11px]">info</span>
+<span class="flex-1 text-on-surface/80">Memory usage: 142MB / 512MB (27.7%)</span>
+</div>
+</div>
+</div>
+<!-- Terminal Footer -->
+<div class="bg-surface-container-highest/20 border-t border-white/5 px-6 py-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse shadow-[0_0_8px_#aec6ff]"></span>
+<span class="text-[10px] font-label text-outline uppercase tracking-wider">Listening for new logs...</span>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-[10px] font-label text-outline hover:text-white transition-colors uppercase tracking-widest">Clear Console</button>
+<button class="text-[10px] font-label text-outline hover:text-white transition-colors uppercase tracking-widest">Wrap Text</button>
+</div>
+</div>
+</div>
+<!-- Stats & Context (1/4 width) -->
+<div class="space-y-6">
+<!-- Bento Card: Error Rate -->
+<div class="p-6 bg-surface-container-low rounded-2xl border border-white/5 shadow-xl relative overflow-hidden group">
+<p class="text-[10px] font-label text-outline uppercase tracking-widest mb-4">Error Rate (24h)</p>
+<div class="flex items-end justify-between">
+<span class="text-4xl font-headline font-extrabold text-error">1.2%</span>
+<span class="text-[10px] font-label text-error bg-error/10 border border-error/20 px-2 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">trending_up</span> 0.4%
+                        </span>
+</div>
+<div class="mt-6 flex gap-1 items-end h-10">
+<div class="flex-1 bg-error/10 h-1/4 rounded-t-sm"></div>
+<div class="flex-1 bg-error/20 h-2/4 rounded-t-sm"></div>
+<div class="flex-1 bg-error/30 h-1/4 rounded-t-sm"></div>
+<div class="flex-1 bg-error/40 h-3/4 rounded-t-sm"></div>
+<div class="flex-1 bg-error h-full rounded-t-sm"></div>
+<div class="flex-1 bg-error/40 h-2/4 rounded-t-sm"></div>
+<div class="flex-1 bg-error/20 h-1/4 rounded-t-sm"></div>
+</div>
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-error/5 blur-3xl rounded-full"></div>
+</div>
+<!-- Bento Card: Response Time -->
+<div class="p-6 bg-surface-container-low rounded-2xl border border-white/5 shadow-xl relative overflow-hidden">
+<p class="text-[10px] font-label text-outline uppercase tracking-widest mb-4">AVG Response Time</p>
+<div class="flex items-end justify-between mb-6">
+<span class="text-4xl font-headline font-extrabold text-secondary">82ms</span>
+<span class="text-[10px] font-label text-secondary bg-secondary/10 border border-secondary/20 px-2 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">trending_down</span> 12ms
+                        </span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-2/3 shadow-[0_0_10px_#aec6ff]"></div>
+</div>
+<div class="flex justify-between mt-3 text-[9px] font-label text-outline/60 uppercase tracking-widest">
+<span>P50: 64ms</span>
+<span>P99: 412ms</span>
+</div>
+</div>
+<!-- Action Card: Quick Links -->
+<div class="p-6 bg-surface-container-low rounded-2xl border border-white/5 shadow-xl">
+<h3 class="text-sm font-headline font-bold text-white mb-4 uppercase tracking-widest">Diagnostics</h3>
+<div class="space-y-2">
+<a class="flex items-center justify-between p-3 bg-surface-container-lowest border border-white/5 rounded-xl hover:bg-white/5 transition-all group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform text-xl">troubleshoot</span>
+<span class="text-xs font-label uppercase tracking-wider text-on-surface">Health Check</span>
+</div>
+<span class="material-symbols-outlined text-outline text-sm" data-icon="chevron_right">chevron_right</span>
+</a>
+<a class="flex items-center justify-between p-3 bg-surface-container-lowest border border-white/5 rounded-xl hover:bg-white/5 transition-all group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform text-xl">history</span>
+<span class="text-xs font-label uppercase tracking-wider text-on-surface">Audit Trail</span>
+</div>
+<span class="material-symbols-outlined text-outline text-sm" data-icon="chevron_right">chevron_right</span>
+</a>
+<a class="flex items-center justify-between p-3 bg-surface-container-lowest border border-white/5 rounded-xl hover:bg-white/5 transition-all group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary group-hover:scale-110 transition-transform text-xl">rule</span>
+<span class="text-xs font-label uppercase tracking-wider text-on-surface">Log Rules</span>
+</div>
+<span class="material-symbols-outlined text-outline text-sm" data-icon="chevron_right">chevron_right</span>
+</a>
+</div>
+</div>
+<!-- Ad/Tip Card -->
+<div class="relative rounded-2xl overflow-hidden aspect-video group cursor-pointer border border-white/10">
+<img alt="System Metrics" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnFb_4slPwIFvYavhAA7Q2cBJfBVdglDcBi6GSfbDV4wA4e2BjUE2a7SAOvOcm1_Rr4eI2NKr6r2QTcUobnxJ3emvRZOrhI7jbVkm-UNb9a5xyjX4tadvqVfGMNWae9H3uJO4uLY6km0_eulo8t45ezAAXN0qdjkxIIQ_VvzAUsf2JqvSTTcD9RTeiMv0kd0QfswXwa3-DaWRzo7uENeKUxBWN0kxJssyMF2dNm9s4zY3pY3o0WAzqRUjgreybcgk4jSw2FefiNoA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent p-6 flex flex-col justify-end">
+<span class="text-[9px] font-label text-primary font-bold uppercase tracking-[0.3em] mb-1">PRO TIP</span>
+<p class="text-xs font-headline text-white/90 leading-snug font-medium">Connect your logs directly to Slack for instant error alerts.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-black border-t border-white/5 w-full py-20 px-12">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12">
+<div class="flex flex-col gap-6">
+<span class="text-3xl font-bold tracking-tighter text-white font-headline cursor-pointer" onclick="location.href='index.html'">Sylk</span>
+<p class="max-w-xs text-on-surface-variant text-sm leading-relaxed">The global compute platform for high-performance applications. Engineered for the next generation of the web.</p>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-16">
+<div class="flex flex-col gap-4">
+<span class="text-white font-bold text-sm tracking-tight">Product</span>
+<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Features</a>
+<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Integrations</a>
+<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Pricing</a>
+<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Changelog</a>
+</div>
+<div class="flex flex-col gap-4">
+<span class="text-white font-bold text-sm tracking-tight">Resources</span>
+<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Documentation</a>
+<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Guides</a>
+<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">API Reference</a>
+<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Status</a>
+</div>
+<div class="flex flex-col gap-4">
+<span class="text-white font-bold text-sm tracking-tight">Legal</span>
+<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-white transition-colors text-sm" href="#">Terms of Service</a>
+</div>
+</div>
+</div>
+<div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+<p class="font-['Space_Grotesk'] text-[0.7rem] uppercase tracking-widest text-outline">© 2024 Sylk Kinetic Systems Inc.</p>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_#22c55e]"></div>
+<span class="text-[0.7rem] font-['Space_Grotesk'] uppercase tracking-widest text-outline">All Systems Operational</span>
+</div>
+</div>
+</footer>
+</body>
+</html>
