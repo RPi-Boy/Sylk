@@ -1,17 +1,28 @@
 const express = require('express');
+const { runInNewContext } = require('vm');
+
 const app = express();
 app.use(express.json());
 
 app.post('/exec', (req, res) => {
-    const { code } = req.body;
+    const code = req.body.code;
+    let output = '';
+
+    const sandbox = {
+        console: {
+            log: (...args) => { output += args.join(' ') + '\n'; },
+            error: (...args) => { output += args.join(' ') + '\n'; }
+        }
+    };
+
     try {
-        const result = eval(code);
-        res.json({ result: result });
+        runInNewContext(code, sandbox);
+        res.json({ result: output.trim() });
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        res.json({ result: e.toString() });
     }
 });
 
-app.listen(5001, () => {
-    console.log('Node runtime listening on 5001');
+app.listen(5000, () => {
+    console.log('Node runtime listening on 5000');
 });
