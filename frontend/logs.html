@@ -319,6 +319,7 @@
         let levelColor = "text-secondary";
         if (level === "error" || level === "warn") levelColor = "text-error";
         else if (level === "metric") levelColor = "text-primary";
+        else if (level === "success") levelColor = "text-green-400";
 
         const markup = `
           <div class="flex items-start gap-4 text-on-surface-variant hover:bg-white/5 py-0.5 px-2 rounded transition-colors group">
@@ -342,6 +343,25 @@
         data.nodes.forEach(node => {
           appendLog("info", `Node ${node.id} is currently ${node.status}`, timeStr);
         });
+      });
+
+      source.addEventListener("sylk_event", (e) => {
+        const data = JSON.parse(e.data);
+        const date = new Date();
+        const timeStr = date.toTimeString().split(' ')[0] + '.' + String(date.getMilliseconds()).padStart(3, '0');
+        
+        const shortTaskId = data.task_id ? data.task_id.substring(0, 8) : 'unknown';
+        const nodeId = data.node_id || 'network';
+
+        if (data.event === "task_queued") {
+          appendLog("info", `Task [${shortTaskId}] queued for edge mesh execution (${data.language})`, timeStr);
+        } else if (data.event === "task_picked_up") {
+          appendLog("metric", `Node ${nodeId} picked up Task [${shortTaskId}]`, timeStr);
+        } else if (data.event === "task_completed") {
+          appendLog("success", `Node ${nodeId} successfully completed Task [${shortTaskId}]`, timeStr);
+        } else if (data.event === "task_failed") {
+          appendLog("error", `Node ${nodeId} failed Task [${shortTaskId}]: ${data.error || 'Execution Error'}`, timeStr);
+        }
       });
 
       source.onerror = () => {

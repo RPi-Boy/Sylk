@@ -118,7 +118,16 @@ def poll_tasks():
             r.rpush(QUEUE_NAME, raw)
             return
 
-        if not execute_task(task):
+        event_picked_up = {"event": "task_picked_up", "task_id": task.get("task_id"), "node_id": NODE_ID}
+        r.publish("sylk_events", json.dumps(event_picked_up))
+
+        success = execute_task(task)
+        if success:
+            event_completed = {"event": "task_completed", "task_id": task.get("task_id"), "node_id": NODE_ID}
+            r.publish("sylk_events", json.dumps(event_completed))
+        else:
+            event_failed = {"event": "task_failed", "task_id": task.get("task_id"), "node_id": NODE_ID}
+            r.publish("sylk_events", json.dumps(event_failed))
             print(f"Requeuing failed task {task.get('task_id')}")
             r.rpush(QUEUE_NAME, raw)
 

@@ -3,4 +3,4 @@ control_plane_url: "http://10.45.243.170:8000" # Replace with your friend's IP
 redis_url: "redis://10.45.243.170:6379"     # Replace with your friend's IP
 max_cpu_threshold: 85.0
 polling_interval: 2
-arch: "x86"
+arch: "default"

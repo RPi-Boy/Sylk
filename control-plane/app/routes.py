@@ -77,6 +77,7 @@ async def create_task(task: schemas.TaskIn, db: Session = Depends(get_db), curre
     db.refresh(db_task)
 
     queue_task(task_id, task.code, pref, task.language)
+    r.publish("sylk_events", json.dumps({"event": "task_queued", "task_id": task_id, "language": task.language}))
     return schemas.TaskOut(task_id=task_id, status=schemas.TaskStatus.QUEUED)
 
 @router.get("/tasks/{task_id}", response_model=schemas.TaskOut)
@@ -162,27 +163,46 @@ async def get_telemetry(request: Request):
         raise HTTPException(status_code=401, detail="Invalid token for SSE channel")
 
     async def event_generator():
+        pubsub = r.pubsub()
+        pubsub.subscribe("sylk_events")
+        
+        last_nodes_poll = 0
         while True:
             if await request.is_disconnected():
+                pubsub.unsubscribe("sylk_events")
+                pubsub.close()
                 break
 
-            keys = r.keys("node:*")
-            nodes = []
-            for k in keys:
-                status = r.hget(k, "status")
-                node_id = k.decode("utf-8").split(":")[1]
-                nodes.append({"id": node_id, "status": status.decode("utf-8") if status else "unknown"})
+            # Poll for pubsub messages
+            message = pubsub.get_message(ignore_subscribe_messages=True)
+            if message and message.get('type') == 'message':
+                event_data = json.loads(message['data'].decode('utf-8'))
+                yield {
+                    "event": "sylk_event",
+                    "data": json.dumps(event_data)
+                }
 
-            data = {
-                "timestamp": time.time(),
-                "nodes": nodes
-            }
-            yield {
-                "event": "telemetry",
-                "id": "message_id",
-                "retry": 15000,
-                "data": json.dumps(data)
-            }
-            await asyncio.sleep(2)
+            # Poll for node status every 2 seconds
+            if time.time() - last_nodes_poll > 2:
+                last_nodes_poll = time.time()
+                keys = r.keys("node:*")
+                nodes = []
+                for k in keys:
+                    status = r.hget(k, "status")
+                    node_id = k.decode("utf-8").split(":")[1]
+                    nodes.append({"id": node_id, "status": status.decode("utf-8") if status else "unknown"})
+
+                data = {
+                    "timestamp": time.time(),
+                    "nodes": nodes
+                }
+                yield {
+                    "event": "telemetry",
+                    "id": "message_id",
+                    "retry": 15000,
+                    "data": json.dumps(data)
+                }
+            
+            await asyncio.sleep(0.1)
 
     return EventSourceResponse(event_generator())
