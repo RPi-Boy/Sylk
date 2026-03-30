@@ -55,9 +55,10 @@ def start_warm_container(lang="python"):
         container = docker_client.containers.run(
             image,
             detach=True,
-            command=["tail", "-f", "/dev/null"], # Keep alive for exec
             **SANDBOX_CONFIG
         )
+        # Give the internal server a moment to bind to the port
+        time.sleep(1.5)
         with pool_lock:
             warm_pool.append({"container": container, "lang": lang})
         print(f"Warmed up new {lang} container: {container.id[:12]}")
@@ -132,16 +133,17 @@ def execute_task(task_data):
     print(f"Executing task {task_id} ({language}) on container {container.id[:12]}")
     
     try:
-        payload_json = json.dumps({"code": code})
-        encoded_payload = json.dumps(payload_json) # safely escaped JSON string for shell
+        import base64
+        # Base64 encode the user's code to perfectly bypass all shell escaping nightmares
+        b64_code = base64.b64encode(code.encode('utf-8')).decode('utf-8')
         
         # Hybrid Loopback Strategy (Aarav's Suggestion):
         # We exec a script INSIDE the network-less container to hit localhost:5000
         if language == "python":
-            py_script = f"import urllib.request; req=urllib.request.Request('http://localhost:5000/exec', data={encoded_payload}.encode('utf-8'), headers={{'Content-Type': 'application/json'}}); print(urllib.request.urlopen(req).read().decode('utf-8'))"
+            py_script = f"import urllib.request, json, base64; c = base64.b64decode('{b64_code}').decode('utf-8'); d = json.dumps({{'code': c}}).encode('utf-8'); req = urllib.request.Request('http://localhost:5000/exec', data=d, headers={{'Content-Type': 'application/json'}}); print(urllib.request.urlopen(req).read().decode('utf-8'))"
             exec_command = ["python", "-c", py_script]
         elif language == "node":
-            node_script = f"fetch('http://localhost:5000/exec', {{method: 'POST', headers: {{'Content-Type': 'application/json'}}, body: {encoded_payload}}}).then(r=>r.text()).then(console.log)"
+            node_script = f"const c = Buffer.from('{b64_code}', 'base64').toString('utf8'); fetch('http://localhost:5000/exec', {{method: 'POST', headers: {{'Content-Type': 'application/json'}}, body: JSON.stringify({{code: c}})}}).then(r=>r.text()).then(console.log);"
             exec_command = ["node", "-e", node_script]
         else:
             print(f"Unsupported language: {language}")
