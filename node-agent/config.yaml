@@ -1,0 +1,5 @@
+node_id: "local-node-01"
+control_plane_url: "http://localhost:8000"
+max_cpu_threshold: 85.0
+polling_interval: 2
+arch: "x86"

@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pydantic
+slowapi
+redis
+sqlalchemy
+psycopg2-binary
+pydantic-settings

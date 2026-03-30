@@ -1,0 +1,12 @@
+name: Sylk Deploy
+on: [push]
+
+jobs:
+  ping-webhook:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Sylk Webhook
+        run: |
+          curl -X POST https://sylk-api.example.com/tasks \
+          -H "Content-Type: application/json" \
+          -d '{"code": "print(\"Hello from GitHub!\")", "language": "python"}'
