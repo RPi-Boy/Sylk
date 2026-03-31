@@ -20,7 +20,6 @@ class TaskIn(BaseModel):
     language: str = "python"
     hardware_pref: Optional[HardwareType] = HardwareType.DEFAULT
 
-
 class TaskOut(BaseModel):
     task_id: str
     status: TaskStatus
@@ -40,3 +39,26 @@ class NodeHeartbeat(BaseModel):
     cpu_usage: float
     memory_usage: float
     is_busy: bool
+
+# --- FaaS Schemas ---
+
+class FunctionCreate(BaseModel):
+    slug: str
+    language: str  # "python" or "node"
+    code: str
+
+class FunctionOut(BaseModel):
+    function_id: str
+    slug: str
+    language: str
+    endpoint: str
+    created_at: Optional[str] = None
+
+class FunctionInvoke(BaseModel):
+    params: Optional[Dict[str, Any]] = {}
+
+class TaskResultCallback(BaseModel):
+    task_id: str
+    result: str
+    node_id: str
+    status: str = "done"  # "done" or "failed"

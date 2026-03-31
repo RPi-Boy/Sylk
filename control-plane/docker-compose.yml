@@ -9,17 +9,18 @@ services:
     depends_on:
       - redis
     volumes:
-      - ./tasks.db:/app/sylk_analytics.db
-  sync-worker:
-    build: .
-    command: ["python", "-m", "app.sync_worker"]
-    environment:
-      - REDIS_URL=redis://redis:6379
-    depends_on:
-      - redis
-    volumes:
-      - ./tasks.db:/app/sylk_analytics.db
+      - db_data:/app/data
+    labels:
+      - "sylk-type=infrastructure"
+    restart: unless-stopped
+
   redis:
     image: "redis:alpine"
     ports:
       - "6379:6379"
+    labels:
+      - "sylk-type=infrastructure"
+    restart: unless-stopped
+
+volumes:
+  db_data:
