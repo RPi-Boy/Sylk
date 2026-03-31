@@ -1,5 +1,6 @@
 """Sylk Python Runtime Worker - Dedicated worker for Python container execution."""
-import time, redis, os, json, base64, uuid, docker, threading, yaml, requests, signal, sys, atexit, random, string, socket
+import time, redis, os, json, base64, uuid, docker, threading, yaml, requests, signal, sys, atexit, random, string, socket, math
+import concurrent.futures
 from watchdog import Watchdog
 from registration import register, send_heartbeat, get_node_info, calculate_max_containers
 
@@ -20,8 +21,9 @@ CONTROL_PLANE_URL = config.get("control_plane_url", "http://localhost:8000")
 POLLING_INTERVAL = config.get("polling_interval", 2)
 ARCH = config.get("arch", get_node_info()["hardware_type"])
 WARM_POOL_SIZE = 3
-MIN_POOL_SIZE = 1
-IDLE_TIMEOUT = 5  # seconds before draining to MIN_POOL_SIZE
+TARGET_POOL_SIZE = 3
+current_max_cap = 10
+IDLE_TIMEOUT = 5  # seconds before draining
 
 REDIS_URL = config.get("redis_url", os.getenv("REDIS_URL", "redis://localhost:6379"))
 r = redis.from_url(REDIS_URL)
@@ -30,6 +32,9 @@ watchdog = Watchdog(threshold=config.get("max_cpu_threshold", 80.0))
 warm_pool = []
 pool_lock = threading.Lock()
 shutdown_flag = threading.Event()
+active_tasks = 0
+active_tasks_lock = threading.Lock()
+executor = concurrent.futures.ThreadPoolExecutor(max_workers=20)
 
 # ─── Display Name ────────────────────────────────────────────────────
 try:
@@ -65,6 +70,21 @@ def touch_task_time():
 def get_idle_seconds():
     with task_time_lock:
         return time.time() - last_task_time
+
+task_arrivals = []
+arrival_lock = threading.Lock()
+
+def record_task_arrival():
+    now = time.time()
+    with arrival_lock:
+        task_arrivals.append(now)
+        task_arrivals[:] = [t for t in task_arrivals if now - t <= 30]
+
+def get_tps():
+    now = time.time()
+    with arrival_lock:
+        valid = [t for t in task_arrivals if now - t <= 30]
+        return len(valid) / 30.0
 
 QUEUE_NAME = "q_python"
 
@@ -118,13 +138,28 @@ def start_warm_container():
     except Exception as e:
         print(f"Failed to warm Python container: {e}")
 
-def fill_pool():
+def pool_manager_loop():
+    """Dynamically maintains warm_pool to match TARGET_POOL_SIZE"""
     while not shutdown_flag.is_set():
-        with pool_lock:
-            count = len(warm_pool)
-        if count >= WARM_POOL_SIZE:
-            break
-        start_warm_container()
+        try:
+            with pool_lock:
+                count = len(warm_pool)
+            if count < TARGET_POOL_SIZE:
+                start_warm_container()
+            elif count > TARGET_POOL_SIZE:
+                idle = get_idle_seconds()
+                if idle >= IDLE_TIMEOUT:
+                    with pool_lock:
+                        if len(warm_pool) > TARGET_POOL_SIZE:
+                            c = warm_pool.pop()
+                            try:
+                                c.remove(force=True)
+                                print(f"[SCALER] Scaled down container: {c.id[:12]}")
+                            except Exception:
+                                pass
+        except Exception:
+            pass
+        time.sleep(1)
 
 def get_container():
     """Returns (container, is_cold_start) tuple."""
@@ -156,7 +191,6 @@ def execute_task(task):
         post_callback(callback_url, task_id, "No container available", "failed", latency_ms)
         return False
 
-    threading.Thread(target=fill_pool, daemon=True).start()
     print(f"Executing {task_id} on {container.id[:12]}")
     try:
         r.publish("sylk_events", json.dumps({"event": "task_executing", "task_id": task_id, "node_id": NODE_ID}))
@@ -233,22 +267,43 @@ def post_callback(callback_url, task_id, result, status, latency_ms=None):
 
 # ─── Polling ──────────────────────────────────────────────────────────
 
+def run_task_wrapper(task):
+    global active_tasks
+    try:
+        execute_task(task)
+    finally:
+        with active_tasks_lock:
+            active_tasks -= 1
+
 def poll_tasks():
+    global active_tasks
+    
+    with active_tasks_lock:
+        limit = max(1, current_max_cap - 1)
+        current_active = active_tasks
+        
+    if current_active >= limit:
+        time.sleep(0.5)
+        return
+
+    if current_active > 0:
+        load_ratio = current_active / limit
+        time.sleep(load_ratio * 0.5)
+
     result = r.blpop(QUEUE_NAME, timeout=POLLING_INTERVAL)
     if result:
         _, raw = result
         task = json.loads(raw)
+        record_task_arrival()
         try:
             r.publish("sylk_events", json.dumps({"event": "task_picked_up", "task_id": task.get("task_id"), "node_id": NODE_ID}))
         except Exception:
             pass
 
-        success = execute_task(task)
-        event = "task_completed" if success else "task_failed"
-        try:
-            r.publish("sylk_events", json.dumps({"event": event, "task_id": task.get("task_id"), "node_id": NODE_ID}))
-        except Exception:
-            pass
+        with active_tasks_lock:
+            active_tasks += 1
+            
+        executor.submit(run_task_wrapper, task)
 
 def heartbeat_loop():
     while not shutdown_flag.is_set():
@@ -265,6 +320,8 @@ def heartbeat_loop():
                 containers_running = 0
 
             max_cap = calculate_max_containers(containers_running)
+            global current_max_cap
+            current_max_cap = max_cap
 
             with timing_lock:
                 avg_cold = (sum(cold_start_times) / len(cold_start_times)
@@ -284,20 +341,24 @@ def heartbeat_loop():
             pass
         time.sleep(10)
 
-def idle_drain_loop():
-    """Drain warm pool to MIN_POOL_SIZE when idle for IDLE_TIMEOUT seconds."""
+def predictive_scaler_loop():
+    global TARGET_POOL_SIZE
     while not shutdown_flag.is_set():
         try:
-            idle = get_idle_seconds()
-            if idle >= IDLE_TIMEOUT:
-                with pool_lock:
-                    while len(warm_pool) > MIN_POOL_SIZE:
-                        c = warm_pool.pop()
-                        try:
-                            c.remove(force=True)
-                            print(f"[IDLE] Drained container: {c.id[:12]}")
-                        except Exception:
-                            pass
+            tps = get_tps()
+            with timing_lock:
+                avg_time = (sum(warm_start_times) / len(warm_start_times)) if warm_start_times else 500.0
+            
+            # Predict concurrency needed: tps * avg_exec_time_in_seconds
+            base_concurrency = tps * (avg_time / 1000.0)
+            
+            # User wants 10% scaling sensitivity + 1 buffer
+            desired = int(math.ceil(base_concurrency * 1.1)) + 1
+            
+            # Maintain at least 3 containers unless max_cap is lower
+            min_warm = min(3, max(1, current_max_cap))
+            
+            TARGET_POOL_SIZE = max(min_warm, min(desired, current_max_cap))
         except Exception:
             pass
         time.sleep(2)
@@ -311,9 +372,9 @@ if __name__ == "__main__":
         print("Warning: Registration failed. Proceeding anyway.")
 
     threading.Thread(target=heartbeat_loop, daemon=True).start()
-    threading.Thread(target=idle_drain_loop, daemon=True).start()
+    threading.Thread(target=pool_manager_loop, daemon=True).start()
+    threading.Thread(target=predictive_scaler_loop, daemon=True).start()
     reap_zombies()
-    fill_pool()
 
     print(f"Listening on queue: {QUEUE_NAME}")
     while not shutdown_flag.is_set():
