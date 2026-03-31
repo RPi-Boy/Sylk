@@ -1,5 +1,6 @@
 try:
     import psutil
+
     HAS_PSUTIL = True
 except ImportError:
     HAS_PSUTIL = False
@@ -8,13 +9,14 @@ import time
 import threading
 from collections import deque
 
+
 class Watchdog:
     def __init__(self, threshold=80.0, window_size=5):
         self.threshold = threshold
         self.window_size = window_size
         self.history = deque(maxlen=window_size)
         self._current_avg = 0.0
-        
+
         # Start background thread
         self.thread = threading.Thread(target=self._monitor_loop, daemon=True)
         self.thread.start()
@@ -26,7 +28,7 @@ class Watchdog:
             else:
                 usage = 10.0
                 time.sleep(1)
-            
+
             self.history.append(usage)
             if len(self.history) > 0:
                 self._current_avg = sum(self.history) / len(self.history)
@@ -45,8 +47,11 @@ class Watchdog:
         # Busy if CPU > threshold OR RAM > 90%
         return avg_cpu > self.threshold or mem_usage > 90.0
 
+
 if __name__ == "__main__":
     w = Watchdog()
     while True:
-        print(f"CPU Avg: {w.get_cpu_average():.1f}% | Mem: {w.get_memory_usage()}% | Busy: {w.is_busy()}")
+        print(
+            f"CPU Avg: {w.get_cpu_average():.1f}% | Mem: {w.get_memory_usage()}% | Busy: {w.is_busy()}"
+        )
         time.sleep(1)

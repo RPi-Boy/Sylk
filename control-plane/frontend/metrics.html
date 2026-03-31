@@ -4,7 +4,8 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Sylk | Performance Metrics</title>
+    <title>Sylk | Cluster Metrics</title>
+    <meta name="description" content="Real-time node metrics, container capacity, and spinup performance for your Sylk compute cluster." />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@400;500;700&amp;display=swap"
@@ -98,12 +99,10 @@
             background: radial-gradient(circle at top right, rgba(124, 58, 237, 0.08) 0%, transparent 60%);
         }
 
-        /* Bumped secondary text legibility to 65% */
         .text-on-surface-variant {
             color: rgba(255, 255, 255, 0.65) !important;
         }
 
-        /* Active nav glow */
         nav a.nav-active {
             color: #fff;
             text-shadow: 0 0 12px rgba(210, 187, 255, 0.7);
@@ -111,44 +110,53 @@
             padding-bottom: 2px;
         }
 
-        /* Chart bar hover: dim siblings, lift hovered */
-        .chart-bar {
-            transition: opacity 0.15s ease, transform 0.15s ease;
-            cursor: pointer;
+        /* Usage bar gradient */
+        .usage-bar {
+            background: linear-gradient(90deg, #7c3aed, #d2bbff);
+            border-radius: 999px;
+            transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .usage-bar-cpu {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        }
+        .usage-bar-mem {
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+        }
+        .usage-bar-container {
+            background: linear-gradient(90deg, #10b981, #34d399);
         }
 
-        .chart-bar-group:hover .chart-bar {
-            opacity: 0.35;
-        }
-
-        .chart-bar-group:hover .chart-bar:hover {
-            opacity: 1 !important;
-            transform: scaleY(1.03);
-            transform-origin: bottom;
-        }
-
-        /* Floating tooltip */
-        .bar-tooltip {
-            position: absolute;
-            bottom: calc(100% + 8px);
-            left: 50%;
-            transform: translateX(-50%);
-            background: #ffffff;
-            color: #000000;
-            font-size: 10px;
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700;
-            padding: 4px 8px;
-            border-radius: 6px;
-            white-space: nowrap;
-            pointer-events: none;
+        /* Node card entrance */
+        .node-card {
             opacity: 0;
-            transition: opacity 0.15s ease;
-            z-index: 10;
+            transform: translateY(12px) scale(0.97);
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .node-card.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        .node-card.removing {
+            opacity: 0;
+            transform: translateY(-8px) scale(0.95);
         }
 
-        .chart-bar:hover .bar-tooltip {
-            opacity: 1;
+        /* Status dot pulse */
+        @keyframes pulse-idle {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+            50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+        }
+        @keyframes pulse-busy {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); }
+            50% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+        }
+        .status-idle { animation: pulse-idle 2s infinite; }
+        .status-busy { animation: pulse-busy 1.5s infinite; }
+
+        /* Spinup comparison shimmer */
+        .spinup-card:hover .spinup-value {
+            text-shadow: 0 0 20px currentColor;
         }
     </style>
 
@@ -200,30 +208,23 @@
             <span class="material-symbols-outlined text-sm">chevron_right</span>
             <a href="projects.html" class="hover:text-white transition-colors">Projects</a>
             <span class="material-symbols-outlined text-sm">chevron_right</span>
-            <span class="text-white font-bold">Usage</span>
+            <span class="text-white font-bold">Cluster Metrics</span>
         </nav>
+
         <!-- Header Section -->
-        <header class="relative z-10 mb-16 flex flex-col md:flex-row md:items-end justify-between gap-8 stagger-boot">
+        <header class="relative z-10 mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8 stagger-boot">
             <div class="space-y-4">
                 <div class="flex items-center gap-3 mb-2">
                     <span
-                        class="font-label text-[10px] uppercase tracking-[0.2em] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded">Production</span>
-                    <span class="font-label text-[10px] uppercase tracking-[0.2em] text-outline">v2.4.0-stable</span>
+                        class="font-label text-[10px] uppercase tracking-[0.2em] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded">Live</span>
+                    <span id="header-node-count" class="font-label text-[10px] uppercase tracking-[0.2em] text-outline">0 nodes connected</span>
                 </div>
                 <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-white font-headline leading-none">
-                    edge-compute-engine</h1>
-                <p class="text-on-surface-variant max-w-2xl text-lg font-medium">Real-time performance metrics for your
-                    distributed function. Analyzing traffic across 24 global edge nodes.</p>
+                    Cluster Metrics</h1>
+                <p class="text-on-surface-variant max-w-2xl text-lg font-medium">Real-time node health, container
+                    capacity, and spinup performance across your compute mesh.</p>
             </div>
             <div class="flex gap-3">
-                <div class="flex bg-surface-container-low rounded-full p-1 border border-white/5">
-                    <button
-                        class="px-5 py-2 text-xs font-bold text-black bg-white rounded-full transition-all">LIVE</button>
-                    <button
-                        class="px-5 py-2 text-xs font-bold text-on-surface-variant hover:text-white transition-colors">24H</button>
-                    <button
-                        class="px-5 py-2 text-xs font-bold text-on-surface-variant hover:text-white transition-colors">7D</button>
-                </div>
                 <button onclick="location.href='logs.html'"
                     class="bg-surface-container-high text-white px-5 py-2 rounded-full text-xs font-bold flex items-center gap-2 border border-white/10 hover:bg-surface-bright transition-all">
                     <span class="material-symbols-outlined text-sm">terminal</span> View Logs
@@ -231,114 +232,178 @@
             </div>
         </header>
 
-        <!-- Metrics Grid -->
-        <section class="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <!-- Average Latency -->
-            <div onclick="location.href='logs.html'"
-                class="bg-surface-container-low rounded-2xl p-8 border border-white/10 flex flex-col justify-between h-48 hover:border-primary/50 cursor-pointer transition-all group shadow-lg stagger-boot mesh-glass" style="--mesh-color: rgba(210,187,255,0.4);">
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- CUMULATIVE COMPUTE STATUS                                      -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <section id="cumulative-section" class="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+            <!-- Active Nodes -->
+            <div class="bg-surface-container-low rounded-2xl p-6 border border-white/10 flex flex-col justify-between h-40 shadow-lg stagger-boot mesh-glass" style="--mesh-color: rgba(16,185,129,0.4);">
                 <div class="flex justify-between items-start">
-                    <span class="font-label text-xs font-bold text-primary tracking-widest uppercase">Avg Latency</span>
-                    <span class="material-symbols-outlined text-primary text-xl">speed</span>
+                    <span class="font-label text-[10px] font-bold text-emerald-400 tracking-widest uppercase">Active Nodes</span>
+                    <span class="material-symbols-outlined text-emerald-400 text-lg">dns</span>
                 </div>
                 <div>
-                    <div class="flex items-baseline gap-2">
-                        <span id="metric-latency"
-                            class="text-5xl font-bold tracking-tight text-white font-headline">-</span>
-                        <span class="text-lg font-medium text-on-surface-variant">ms</span>
-                    </div>
-                    <p class="text-xs text-on-surface-variant mt-1">↓ 12% vs last hour</p>
+                    <span id="cum-nodes" class="text-4xl font-bold tracking-tight text-white font-headline">0</span>
+                    <p class="text-[10px] text-on-surface-variant mt-1">Heartbeat within 60s</p>
                 </div>
             </div>
-            <!-- Total Throughput -->
-            <div onclick="location.href='logs.html'"
-                class="bg-surface-container-low rounded-2xl p-8 border border-white/10 flex flex-col justify-between h-48 hover:border-secondary/50 cursor-pointer transition-all group shadow-lg stagger-boot mesh-glass" style="--mesh-color: rgba(174,198,255,0.4);">
+            <!-- Cluster CPU -->
+            <div class="bg-surface-container-low rounded-2xl p-6 border border-white/10 flex flex-col justify-between h-40 shadow-lg stagger-boot mesh-glass" style="--mesh-color: rgba(59,130,246,0.4);">
                 <div class="flex justify-between items-start">
-                    <span class="font-label text-xs font-bold text-secondary tracking-widest uppercase">Total
-                        Tasks</span>
-                    <span class="material-symbols-outlined text-secondary text-xl">dynamic_feed</span>
+                    <span class="font-label text-[10px] font-bold text-blue-400 tracking-widest uppercase">Cluster CPU</span>
+                    <span class="material-symbols-outlined text-blue-400 text-lg">memory</span>
                 </div>
                 <div>
-                    <div class="flex items-baseline gap-2">
-                        <span id="metric-tasks"
-                            class="text-5xl font-bold tracking-tight text-white font-headline">-</span>
+                    <div class="flex items-baseline gap-1">
+                        <span id="cum-cpu" class="text-4xl font-bold tracking-tight text-white font-headline">0</span>
+                        <span class="text-sm font-medium text-on-surface-variant">%</span>
                     </div>
-                    <p class="text-xs text-on-surface-variant mt-1">↑ 8% increase today</p>
+                    <div class="w-full bg-white/5 rounded-full h-1.5 mt-2">
+                        <div id="cum-cpu-bar" class="usage-bar usage-bar-cpu h-1.5" style="width: 0%"></div>
+                    </div>
                 </div>
             </div>
-            <!-- Error Rate -->
-            <div onclick="location.href='logs.html'"
-                class="md:col-span-2 bg-surface-container-low rounded-2xl p-8 border border-error/30 flex flex-col justify-between h-48 relative overflow-hidden group hover:border-error/60 cursor-pointer transition-all shadow-lg stagger-boot mesh-glass" style="--mesh-color: rgba(255,180,171,0.4);">
-                <div class="relative z-10 flex justify-between items-start">
-                    <span class="font-label text-xs font-bold text-error tracking-widest uppercase">Error Rate</span>
-                    <span class="material-symbols-outlined text-error text-xl">error_outline</span>
+            <!-- Cluster Memory -->
+            <div class="bg-surface-container-low rounded-2xl p-6 border border-white/10 flex flex-col justify-between h-40 shadow-lg stagger-boot mesh-glass" style="--mesh-color: rgba(245,158,11,0.4);">
+                <div class="flex justify-between items-start">
+                    <span class="font-label text-[10px] font-bold text-amber-400 tracking-widest uppercase">Cluster Memory</span>
+                    <span class="material-symbols-outlined text-amber-400 text-lg">storage</span>
                 </div>
-                <div class="relative z-10">
-                    <div class="flex items-baseline gap-2">
-                        <span id="metric-error"
-                            class="text-5xl font-bold tracking-tight text-white font-headline">-</span>
-                        <span class="text-lg font-medium text-on-surface-variant">%</span>
+                <div>
+                    <div class="flex items-baseline gap-1">
+                        <span id="cum-mem" class="text-4xl font-bold tracking-tight text-white font-headline">0</span>
+                        <span class="text-sm font-medium text-on-surface-variant">%</span>
                     </div>
-                    <p class="text-xs text-on-surface-variant mt-1">Below 0.1% threshold — healthy</p>
+                    <div class="w-full bg-white/5 rounded-full h-1.5 mt-2">
+                        <div id="cum-mem-bar" class="usage-bar usage-bar-mem h-1.5" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Total Containers -->
+            <div class="bg-surface-container-low rounded-2xl p-6 border border-white/10 flex flex-col justify-between h-40 shadow-lg stagger-boot mesh-glass" style="--mesh-color: rgba(16,185,129,0.4);">
+                <div class="flex justify-between items-start">
+                    <span class="font-label text-[10px] font-bold text-emerald-400 tracking-widest uppercase">Containers</span>
+                    <span class="material-symbols-outlined text-emerald-400 text-lg">widgets</span>
+                </div>
+                <div>
+                    <div class="flex items-baseline gap-1">
+                        <span id="cum-containers" class="text-4xl font-bold tracking-tight text-white font-headline">0</span>
+                        <span class="text-sm font-medium text-on-surface-variant">/ <span id="cum-capacity">0</span></span>
+                    </div>
+                    <div class="w-full bg-white/5 rounded-full h-1.5 mt-2">
+                        <div id="cum-container-bar" class="usage-bar usage-bar-container h-1.5" style="width: 0%"></div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Response Time Distribution Chart -->
-        <section class="relative z-10 bg-surface-container-low rounded-2xl border border-white/10 p-8 mb-8 shadow-lg stagger-boot">
-            <div class="flex items-center justify-between mb-6">
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- SPINUP PERFORMANCE                                             -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <section class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+            <!-- Cold Start -->
+            <div class="spinup-card bg-surface-container-low rounded-2xl p-6 border border-blue-500/20 flex flex-col justify-between h-36 shadow-lg stagger-boot hover:border-blue-500/50 transition-all cursor-default">
+                <div class="flex justify-between items-start">
+                    <span class="font-label text-[10px] font-bold text-blue-400 tracking-widest uppercase">Avg Cold Start</span>
+                    <span class="material-symbols-outlined text-blue-400 text-lg">ac_unit</span>
+                </div>
                 <div>
-                    <h3 class="text-xl font-bold text-white font-headline">Response Time Distribution</h3>
-                    <p class="text-xs text-on-surface-variant mt-1">Latency buckets over the last 6 hours — p50 / p95 /
-                        p99</p>
-                </div>
-                <!-- Legend -->
-                <div class="flex items-center gap-6">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-primary/60"></span>
-                        <span class="text-xs font-label text-on-surface-variant uppercase tracking-wider">p50</span>
+                    <div class="flex items-baseline gap-1">
+                        <span id="spinup-cold" class="spinup-value text-3xl font-bold tracking-tight text-blue-300 font-headline transition-all">--</span>
+                        <span class="text-sm font-medium text-on-surface-variant">ms</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
-                        <span class="text-xs font-label text-on-surface-variant uppercase tracking-wider">p99
-                            peak</span>
+                    <p class="text-[10px] text-on-surface-variant mt-1">Container spin-up + task execution</p>
+                </div>
+            </div>
+            <!-- Warm Start -->
+            <div class="spinup-card bg-surface-container-low rounded-2xl p-6 border border-orange-500/20 flex flex-col justify-between h-36 shadow-lg stagger-boot hover:border-orange-500/50 transition-all cursor-default">
+                <div class="flex justify-between items-start">
+                    <span class="font-label text-[10px] font-bold text-orange-400 tracking-widest uppercase">Avg Warm Start</span>
+                    <span class="material-symbols-outlined text-orange-400 text-lg">local_fire_department</span>
+                </div>
+                <div>
+                    <div class="flex items-baseline gap-1">
+                        <span id="spinup-warm" class="spinup-value text-3xl font-bold tracking-tight text-orange-300 font-headline transition-all">--</span>
+                        <span class="text-sm font-medium text-on-surface-variant">ms</span>
+                    </div>
+                    <p class="text-[10px] text-on-surface-variant mt-1">Direct from warm pool + task execution</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- ANALYTICS CARDS (existing)                                     -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <section class="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+            <!-- Average Latency -->
+            <div onclick="location.href='logs.html'"
+                class="bg-surface-container-low rounded-2xl p-6 border border-white/10 flex flex-col justify-between h-36 hover:border-primary/50 cursor-pointer transition-all group shadow-lg stagger-boot mesh-glass" style="--mesh-color: rgba(210,187,255,0.4);">
+                <div class="flex justify-between items-start">
+                    <span class="font-label text-[10px] font-bold text-primary tracking-widest uppercase">Avg Latency</span>
+                    <span class="material-symbols-outlined text-primary text-lg">speed</span>
+                </div>
+                <div>
+                    <div class="flex items-baseline gap-1">
+                        <span id="metric-latency"
+                            class="text-4xl font-bold tracking-tight text-white font-headline">-</span>
+                        <span class="text-sm font-medium text-on-surface-variant">ms</span>
                     </div>
                 </div>
             </div>
-            <!-- Chart -->
-            <div class="chart-bar-group flex items-end gap-3 h-52 border-l border-b border-white/10 px-4 pt-4 relative">
-                <div class="chart-bar relative flex-1 bg-primary/20 hover:bg-primary/60 rounded-t-sm"
-                    style="height:30%">
-                    <span class="bar-tooltip">12ms</span>
+            <!-- Total Tasks -->
+            <div onclick="location.href='logs.html'"
+                class="bg-surface-container-low rounded-2xl p-6 border border-white/10 flex flex-col justify-between h-36 hover:border-secondary/50 cursor-pointer transition-all group shadow-lg stagger-boot mesh-glass" style="--mesh-color: rgba(174,198,255,0.4);">
+                <div class="flex justify-between items-start">
+                    <span class="font-label text-[10px] font-bold text-secondary tracking-widest uppercase">Total Tasks</span>
+                    <span class="material-symbols-outlined text-secondary text-lg">dynamic_feed</span>
                 </div>
-                <div class="chart-bar relative flex-1 bg-primary/30 hover:bg-primary/60 rounded-t-sm"
-                    style="height:45%">
-                    <span class="bar-tooltip">28ms</span>
-                </div>
-                <div class="chart-bar relative flex-1 bg-primary/40 hover:bg-primary/70 rounded-t-sm"
-                    style="height:60%">
-                    <span class="bar-tooltip">42ms</span>
-                </div>
-                <div class="chart-bar relative flex-1 bg-primary/60 hover:bg-primary/80 rounded-t-sm shadow-[0_0_15px_rgba(210,187,255,0.3)]"
-                    style="height:80%">
-                    <span class="bar-tooltip">58ms ↑ peak</span>
-                </div>
-                <div class="chart-bar relative flex-1 bg-primary/40 hover:bg-primary/70 rounded-t-sm"
-                    style="height:65%">
-                    <span class="bar-tooltip">47ms</span>
-                </div>
-                <div class="chart-bar relative flex-1 bg-primary/20 hover:bg-primary/60 rounded-t-sm"
-                    style="height:40%">
-                    <span class="bar-tooltip">31ms</span>
+                <div>
+                    <span id="metric-tasks"
+                        class="text-4xl font-bold tracking-tight text-white font-headline">-</span>
                 </div>
             </div>
-            <!-- X-Axis Labels -->
-            <div class="flex gap-3 px-4 mt-2">
-                <span class="flex-1 text-center text-[10px] font-label text-outline uppercase tracking-wider">-6h</span>
-                <span class="flex-1 text-center text-[10px] font-label text-outline uppercase tracking-wider">-5h</span>
-                <span class="flex-1 text-center text-[10px] font-label text-outline uppercase tracking-wider">-4h</span>
-                <span class="flex-1 text-center text-[10px] font-label text-outline uppercase tracking-wider">-3h</span>
-                <span class="flex-1 text-center text-[10px] font-label text-outline uppercase tracking-wider">-2h</span>
-                <span class="flex-1 text-center text-[10px] font-label text-outline uppercase tracking-wider">Now</span>
+            <!-- Error Rate -->
+            <div onclick="location.href='logs.html'"
+                class="bg-surface-container-low rounded-2xl p-6 border border-error/30 flex flex-col justify-between h-36 hover:border-error/60 cursor-pointer transition-all group shadow-lg stagger-boot mesh-glass" style="--mesh-color: rgba(255,180,171,0.4);">
+                <div class="flex justify-between items-start">
+                    <span class="font-label text-[10px] font-bold text-error tracking-widest uppercase">Error Rate</span>
+                    <span class="material-symbols-outlined text-error text-lg">error_outline</span>
+                </div>
+                <div>
+                    <div class="flex items-baseline gap-1">
+                        <span id="metric-error"
+                            class="text-4xl font-bold tracking-tight text-white font-headline">-</span>
+                        <span class="text-sm font-medium text-on-surface-variant">%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- LIVE NODE GRID                                                 -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <section class="relative z-10 mb-8 stagger-boot">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h2 class="text-xl font-bold text-white font-headline">Live Nodes</h2>
+                    <p class="text-xs text-on-surface-variant mt-1">Auto-discovered from heartbeat. Cards appear and disappear in real-time.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div id="sse-dot" class="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                    <span id="sse-label" class="text-[10px] font-label uppercase tracking-widest text-outline">Connecting...</span>
+                </div>
+            </div>
+
+            <!-- Grid container -->
+            <div id="node-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 min-h-[120px]">
+                <!-- Dynamic node cards appear here -->
+            </div>
+
+            <!-- Empty state -->
+            <div id="no-nodes-msg" class="flex flex-col items-center justify-center py-16 text-center">
+                <span class="material-symbols-outlined text-5xl text-outline mb-4">cloud_off</span>
+                <p class="text-on-surface-variant font-medium">No nodes are sending heartbeats</p>
+                <p class="text-xs text-outline mt-1">Start a worker to see it appear here automatically</p>
             </div>
         </section>
     </main>
@@ -365,17 +430,292 @@
     </footer>
 
     <script>
-        document.addEventListener("DOMContentLoaded", async () => {
-            try {
-                if (!Session.getToken()) return;
+    // ═══════════════════════════════════════════════════════════════════
+    // METRICS DASHBOARD ENGINE
+    // ═══════════════════════════════════════════════════════════════════
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        // Connect to telemetry SSE for ALL live updates (nodes + analytics)
+        connectTelemetry();
+
+        // Also do an initial analytics fetch (works if logged in)
+        try {
+            if (Session.getToken()) {
                 const stats = await SylkAPI.getAnalytics();
-                window.animateCountUp(document.getElementById('metric-latency'), stats.avg_latency_ms);
-                window.animateCountUp(document.getElementById('metric-tasks'), stats.total);
-                window.animateCountUp(document.getElementById('metric-error'), stats.error_rate_pct);
-            } catch (error) {
-                console.error("Failed to load analytics:", error);
+                if (stats) updateAnalyticsCards(stats);
+            }
+        } catch (e) {
+            console.warn("Initial analytics fetch failed (will update via SSE):", e.message);
+        }
+    });
+
+    // ─── SSE Connection ─────────────────────────────────────────────────
+    let evtSource = null;
+    let sseConnected = false;
+    let pollInterval = null;
+
+    function connectTelemetry() {
+        if (evtSource) {
+            try { evtSource.close(); } catch(_) {}
+        }
+
+        const url = SylkAPI.getTelemetryUrl();
+        evtSource = new EventSource(url);
+
+        evtSource.addEventListener("telemetry", (e) => {
+            try {
+                const data = JSON.parse(e.data);
+                if (data.nodes) {
+                    updateNodeGrid(data.nodes);
+                    updateCumulativeStats(data.nodes);
+                    updateSpinupMetrics(data.nodes);
+                }
+                if (data.analytics) {
+                    updateAnalyticsCards(data.analytics);
+                }
+            } catch (err) {
+                console.error("Telemetry parse error:", err);
             }
         });
+
+        evtSource.onopen = () => {
+            sseConnected = true;
+            updateSSEStatus(true);
+            // Clear polling fallback if SSE is working
+            if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+        };
+
+        evtSource.onerror = () => {
+            sseConnected = false;
+            updateSSEStatus(false);
+            evtSource.close();
+            // Start polling fallback
+            if (!pollInterval) {
+                pollInterval = setInterval(pollFallback, 5000);
+            }
+            setTimeout(connectTelemetry, 5000);
+        };
+    }
+
+    // Polling fallback when SSE is down
+    async function pollFallback() {
+        try {
+            if (Session.getToken()) {
+                const nodesData = await SylkAPI.getNodes();
+                if (nodesData && nodesData.nodes) {
+                    updateNodeGrid(nodesData.nodes);
+                    updateCumulativeStats(nodesData.nodes);
+                    updateSpinupMetrics(nodesData.nodes);
+                }
+                const stats = await SylkAPI.getAnalytics();
+                if (stats) updateAnalyticsCards(stats);
+            }
+        } catch (e) {
+            console.warn("Poll fallback failed:", e.message);
+        }
+    }
+
+    function updateSSEStatus(connected) {
+        const dot = document.getElementById('sse-dot');
+        const label = document.getElementById('sse-label');
+        if (dot && label) {
+            dot.className = 'w-2 h-2 rounded-full ' + (connected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500');
+            label.textContent = connected ? 'SSE Connected' : 'SSE Reconnecting...';
+        }
+    }
+
+    // ─── Analytics Cards ────────────────────────────────────────────────
+    function updateAnalyticsCards(stats) {
+        document.getElementById('metric-latency').textContent = stats.avg_latency_ms || '0';
+        document.getElementById('metric-tasks').textContent = stats.total || '0';
+        document.getElementById('metric-error').textContent = stats.error_rate_pct || '0';
+    }
+
+    // ─── Cumulative Stats ───────────────────────────────────────────────
+    function updateCumulativeStats(nodes) {
+        const count = nodes.length;
+        document.getElementById('cum-nodes').textContent = count;
+        document.getElementById('header-node-count').textContent = count + ' node' + (count !== 1 ? 's' : '') + ' connected';
+
+        if (count === 0) return;
+
+        const avgCpu = nodes.reduce((s, n) => s + (n.cpu_usage || 0), 0) / count;
+        const avgMem = nodes.reduce((s, n) => s + (n.memory_usage || 0), 0) / count;
+        const totalContainers = nodes.reduce((s, n) => s + (n.containers_running || 0), 0);
+        const totalCapacity = nodes.reduce((s, n) => s + (n.max_containers || 0), 0);
+
+        document.getElementById('cum-cpu').textContent = Math.round(avgCpu);
+        document.getElementById('cum-cpu-bar').style.width = Math.min(avgCpu, 100) + '%';
+
+        document.getElementById('cum-mem').textContent = Math.round(avgMem);
+        document.getElementById('cum-mem-bar').style.width = Math.min(avgMem, 100) + '%';
+
+        document.getElementById('cum-containers').textContent = totalContainers;
+        document.getElementById('cum-capacity').textContent = totalCapacity;
+        const containerPct = totalCapacity > 0 ? (totalContainers / totalCapacity) * 100 : 0;
+        document.getElementById('cum-container-bar').style.width = Math.min(containerPct, 100) + '%';
+    }
+
+    // ─── Spinup Metrics ─────────────────────────────────────────────────
+    function updateSpinupMetrics(nodes) {
+        const coldValues = nodes.filter(n => n.avg_cold_start_ms != null).map(n => n.avg_cold_start_ms);
+        const warmValues = nodes.filter(n => n.avg_warm_start_ms != null).map(n => n.avg_warm_start_ms);
+
+        const coldEl = document.getElementById('spinup-cold');
+        const warmEl = document.getElementById('spinup-warm');
+
+        if (coldValues.length > 0) {
+            const avgCold = coldValues.reduce((s, v) => s + v, 0) / coldValues.length;
+            coldEl.textContent = avgCold >= 1000 ? (avgCold / 1000).toFixed(1) + 's' : Math.round(avgCold);
+        }
+        if (warmValues.length > 0) {
+            const avgWarm = warmValues.reduce((s, v) => s + v, 0) / warmValues.length;
+            warmEl.textContent = avgWarm >= 1000 ? (avgWarm / 1000).toFixed(1) + 's' : Math.round(avgWarm);
+        }
+    }
+
+    // ─── Node Grid ──────────────────────────────────────────────────────
+    function updateNodeGrid(nodes) {
+        const grid = document.getElementById('node-grid');
+        const emptyState = document.getElementById('no-nodes-msg');
+
+        // Track existing cards
+        const existingIds = new Set();
+        grid.querySelectorAll('[data-node-id]').forEach(el => existingIds.add(el.dataset.nodeId));
+        const currentIds = new Set(nodes.map(n => n.id));
+
+        // Remove cards for nodes that went offline
+        existingIds.forEach(id => {
+            if (!currentIds.has(id)) {
+                const card = grid.querySelector(`[data-node-id="${id}"]`);
+                if (card) {
+                    card.classList.add('removing');
+                    card.classList.remove('visible');
+                    setTimeout(() => card.remove(), 400);
+                }
+            }
+        });
+
+        // Update or create cards for current nodes
+        nodes.forEach(node => {
+            let card = grid.querySelector(`[data-node-id="${node.id}"]`);
+            if (!card) {
+                card = createNodeCard(node);
+                grid.appendChild(card);
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => card.classList.add('visible'));
+                });
+            }
+            updateNodeCard(card, node);
+        });
+
+        // Toggle empty state
+        emptyState.style.display = nodes.length === 0 ? 'flex' : 'none';
+    }
+
+    function createNodeCard(node) {
+        const card = document.createElement('div');
+        card.dataset.nodeId = node.id;
+        card.className = 'node-card bg-surface-container-low rounded-2xl p-5 border border-white/10 shadow-lg hover:border-primary/30 transition-all';
+        card.innerHTML = `
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="node-status-dot w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                    <span class="node-name text-sm font-bold text-white font-headline truncate max-w-[160px]"></span>
+                </div>
+                <span class="node-status-badge font-label text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full"></span>
+            </div>
+            <p class="node-id text-[10px] text-outline font-label mb-4 truncate"></p>
+
+            <div class="space-y-3 mb-4">
+                <div>
+                    <div class="flex justify-between text-[10px] font-label uppercase tracking-wider mb-1">
+                        <span class="text-blue-400">CPU</span>
+                        <span class="node-cpu-val text-on-surface-variant">0%</span>
+                    </div>
+                    <div class="w-full bg-white/5 rounded-full h-1.5">
+                        <div class="node-cpu-bar usage-bar usage-bar-cpu h-1.5" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-[10px] font-label uppercase tracking-wider mb-1">
+                        <span class="text-amber-400">Memory</span>
+                        <span class="node-mem-val text-on-surface-variant">0%</span>
+                    </div>
+                    <div class="w-full bg-white/5 rounded-full h-1.5">
+                        <div class="node-mem-bar usage-bar usage-bar-mem h-1.5" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-3 border-t border-white/5">
+                <div class="flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-emerald-400 text-xs">widgets</span>
+                    <span class="node-containers text-[10px] font-label text-on-surface-variant">0 / 0</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-1" title="Cold start">
+                        <span class="material-symbols-outlined text-blue-400 text-xs">ac_unit</span>
+                        <span class="node-cold text-[10px] font-label text-on-surface-variant">--</span>
+                    </div>
+                    <div class="flex items-center gap-1" title="Warm start">
+                        <span class="material-symbols-outlined text-orange-400 text-xs">local_fire_department</span>
+                        <span class="node-warm text-[10px] font-label text-on-surface-variant">--</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        return card;
+    }
+
+    function updateNodeCard(card, node) {
+        // Name + ID
+        card.querySelector('.node-name').textContent = node.name || node.id;
+        card.querySelector('.node-id').textContent = 'ID: ' + node.id;
+
+        // Status
+        const dot = card.querySelector('.node-status-dot');
+        const badge = card.querySelector('.node-status-badge');
+        const isIdle = node.status === 'idle';
+        dot.className = 'node-status-dot w-2.5 h-2.5 rounded-full ' +
+            (isIdle ? 'bg-emerald-500 status-idle' : 'bg-amber-500 status-busy');
+        badge.textContent = node.status.toUpperCase();
+        badge.className = 'node-status-badge font-label text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full ' +
+            (isIdle ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400');
+
+        // CPU
+        const cpu = Math.round(node.cpu_usage || 0);
+        card.querySelector('.node-cpu-val').textContent = cpu + '%';
+        card.querySelector('.node-cpu-bar').style.width = Math.min(cpu, 100) + '%';
+
+        // Memory
+        const mem = Math.round(node.memory_usage || 0);
+        card.querySelector('.node-mem-val').textContent = mem + '%';
+        card.querySelector('.node-mem-bar').style.width = Math.min(mem, 100) + '%';
+
+        // Containers
+        const running = node.containers_running || 0;
+        const max = node.max_containers || 0;
+        card.querySelector('.node-containers').textContent = running + ' / ' + max;
+
+        // Spinup times
+        const coldEl = card.querySelector('.node-cold');
+        const warmEl = card.querySelector('.node-warm');
+        if (node.avg_cold_start_ms != null) {
+            coldEl.textContent = node.avg_cold_start_ms >= 1000
+                ? (node.avg_cold_start_ms / 1000).toFixed(1) + 's'
+                : Math.round(node.avg_cold_start_ms) + 'ms';
+        } else {
+            coldEl.textContent = '--';
+        }
+        if (node.avg_warm_start_ms != null) {
+            warmEl.textContent = node.avg_warm_start_ms >= 1000
+                ? (node.avg_warm_start_ms / 1000).toFixed(1) + 's'
+                : Math.round(node.avg_warm_start_ms) + 'ms';
+        } else {
+            warmEl.textContent = '--';
+        }
+    }
     </script>
   <script>sessionStorage.setItem('sylk-nav','1');</script>
 </body>
