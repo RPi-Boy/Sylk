@@ -131,7 +131,20 @@ def start_warm_container():
     image = f"sylk-python-runtime:{img_arch}"
     try:
         container = docker_client.containers.run(image, detach=True, **SANDBOX_CONFIG)
-        time.sleep(1.5)
+        
+        # Actively wait for runtime to bind to port 5000
+        script = "import socket; socket.create_connection(('127.0.0.1', 5000), timeout=1)"
+        ready = False
+        for _ in range(20):  # Wait up to ~4 seconds
+            time.sleep(0.2)
+            exit_code, _ = container.exec_run(["python3", "-c", script])
+            if exit_code == 0:
+                ready = True
+                break
+                
+        if not ready:
+            print(f"Warning: Container {container.id[:12]} took too long to boot Flask server.")
+
         with pool_lock:
             warm_pool.append(container)
         print(f"Warmed Python container: {container.id[:12]}")
