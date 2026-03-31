@@ -256,6 +256,8 @@ async def worker_callback(task_id: str, body: schemas.TaskResultCallback, db: Se
         db_task.status = TaskStatusEnum.DONE if body.status == "done" else TaskStatusEnum.FAILED
         db_task.result = body.result
         db_task.node_id = body.node_id
+        if body.latency_ms is not None:
+            db_task.latency_ms = body.latency_ms
         db.commit()
     
     # Store result in Redis for backward compat
@@ -284,25 +286,40 @@ async def worker_callback(task_id: str, body: schemas.TaskResultCallback, db: Se
 # --- Node Endpoints (Internal / Daemon Hook) ---
 @router.post("/register")
 async def register_node(node: schemas.NodeRegister):
-    r.hset(f"node:{node.node_id}", mapping={
+    mapping = {
         "hostname": node.hostname,
         "hardware_type": node.hardware_type.value,
         "cpu_cores": node.cpu_cores,
         "memory_mb": node.memory_mb,
         "last_seen": time.time(),
-        "status": "idle"
-    })
+        "status": "idle",
+        "name": node.name or node.node_id,
+        "containers_running": "0",
+        "max_containers": "10",
+    }
+    r.hset(f"node:{node.node_id}", mapping=mapping)
+    r.expire(f"node:{node.node_id}", 120)  # 2-min grace until first heartbeat
     return {"status": "registered"}
 
 @router.post("/heartbeat")
 async def node_heartbeat(heartbeat: schemas.NodeHeartbeat):
     node_key = f"node:{heartbeat.node_id}"
-    if r.exists(node_key):
-        r.hset(node_key, "last_seen", time.time())
-        r.hset(node_key, "status", "busy" if heartbeat.is_busy else "idle")
-        r.hset(node_key, "cpu_usage", str(heartbeat.cpu_usage))
-        r.hset(node_key, "memory_usage", str(heartbeat.memory_usage))
-        r.expire(node_key, 60)
+    # Always upsert — don't require prior registration
+    mapping = {
+        "last_seen": time.time(),
+        "status": "busy" if heartbeat.is_busy else "idle",
+        "cpu_usage": str(heartbeat.cpu_usage),
+        "memory_usage": str(heartbeat.memory_usage),
+        "name": heartbeat.name or heartbeat.node_id,
+        "containers_running": str(heartbeat.containers_running),
+        "max_containers": str(heartbeat.max_containers),
+    }
+    if heartbeat.avg_cold_start_ms is not None:
+        mapping["avg_cold_start_ms"] = str(heartbeat.avg_cold_start_ms)
+    if heartbeat.avg_warm_start_ms is not None:
+        mapping["avg_warm_start_ms"] = str(heartbeat.avg_warm_start_ms)
+    r.hset(node_key, mapping=mapping)
+    r.expire(node_key, 90)  # Auto-expire if no heartbeat for 90s
     return {"status": "alive"}
 
 # --- Data Endpoints (Frontend API) ---
@@ -310,14 +327,27 @@ async def node_heartbeat(heartbeat: schemas.NodeHeartbeat):
 async def get_nodes(current_user: str = Depends(verify_user_session)):
     keys = r.keys("node:*")
     nodes = []
+    now = time.time()
     for k in keys:
         node_data = r.hgetall(k)
+        last_seen = float(node_data.get(b"last_seen", b"0"))
+        # Skip and clean up stale nodes (no heartbeat in 90s)
+        if now - last_seen > 90:
+            r.delete(k)
+            continue
+        node_id = k.decode("utf-8").split(":")[1]
         nodes.append({
-            "id": k.decode("utf-8").split(":")[1],
+            "id": node_id,
+            "name": node_data.get(b"name", b"").decode("utf-8") or node_id,
             "status": node_data.get(b"status", b"unknown").decode("utf-8"),
             "hardware_type": node_data.get(b"hardware_type", b"unknown").decode("utf-8"),
-            "cpu_usage": float(node_data.get(b"cpu_usage", 0)),
-            "memory_usage": float(node_data.get(b"memory_usage", 0))
+            "cpu_usage": float(node_data.get(b"cpu_usage", b"0")),
+            "memory_usage": float(node_data.get(b"memory_usage", b"0")),
+            "containers_running": int(node_data.get(b"containers_running", b"0")),
+            "max_containers": int(node_data.get(b"max_containers", b"10")),
+            "avg_cold_start_ms": float(node_data[b"avg_cold_start_ms"]) if b"avg_cold_start_ms" in node_data else None,
+            "avg_warm_start_ms": float(node_data[b"avg_warm_start_ms"]) if b"avg_warm_start_ms" in node_data else None,
+            "last_seen": last_seen,
         })
     return {"nodes": nodes}
 
@@ -369,20 +399,58 @@ async def get_telemetry(request: Request):
             # Poll for node status every 2 seconds
             if time.time() - last_nodes_poll > 2:
                 last_nodes_poll = time.time()
+                now = time.time()
                 keys = r.keys("node:*")
                 nodes = []
                 for k in keys:
-                    status = r.hget(k, "status")
+                    node_data = r.hgetall(k)
+                    last_seen = float(node_data.get(b"last_seen", b"0"))
+                    # Skip and clean up stale nodes
+                    if now - last_seen > 90:
+                        r.delete(k)
+                        continue
                     node_id = k.decode("utf-8").split(":")[1]
-                    nodes.append({"id": node_id, "status": status.decode("utf-8") if status else "unknown"})
+                    nodes.append({
+                        "id": node_id,
+                        "name": node_data.get(b"name", b"").decode("utf-8") or node_id,
+                        "status": node_data.get(b"status", b"unknown").decode("utf-8"),
+                        "hardware_type": node_data.get(b"hardware_type", b"unknown").decode("utf-8"),
+                        "cpu_usage": float(node_data.get(b"cpu_usage", b"0")),
+                        "memory_usage": float(node_data.get(b"memory_usage", b"0")),
+                        "containers_running": int(node_data.get(b"containers_running", b"0")),
+                        "max_containers": int(node_data.get(b"max_containers", b"10")),
+                        "avg_cold_start_ms": float(node_data[b"avg_cold_start_ms"]) if b"avg_cold_start_ms" in node_data else None,
+                        "avg_warm_start_ms": float(node_data[b"avg_warm_start_ms"]) if b"avg_warm_start_ms" in node_data else None,
+                        "last_seen": last_seen,
+                    })
 
                 data = {
                     "timestamp": time.time(),
                     "nodes": nodes
                 }
+
+                # Include live analytics in every SSE tick
+                try:
+                    _db = SessionLocal()
+                    total_tasks = _db.query(TaskRecord).count()
+                    failed_tasks = _db.query(TaskRecord).filter(TaskRecord.status == TaskStatusEnum.FAILED).count()
+                    success_tasks = _db.query(TaskRecord).filter(TaskRecord.status == TaskStatusEnum.DONE).count()
+                    _avg_lat = _db.query(func.avg(TaskRecord.latency_ms)).filter(TaskRecord.latency_ms.isnot(None)).scalar() or 0
+                    _err_rate = (failed_tasks / total_tasks * 100) if total_tasks > 0 else 0
+                    data["analytics"] = {
+                        "total": total_tasks,
+                        "success": success_tasks,
+                        "failed": failed_tasks,
+                        "error_rate_pct": round(_err_rate, 2),
+                        "avg_latency_ms": round(float(_avg_lat), 2)
+                    }
+                    _db.close()
+                except Exception:
+                    pass
+
                 yield {
                     "event": "telemetry",
-                    "id": "message_id",
+                    "id": str(time.time()),
                     "retry": 15000,
                     "data": json.dumps(data)
                 }

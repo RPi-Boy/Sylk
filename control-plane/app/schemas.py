@@ -33,12 +33,18 @@ class NodeRegister(BaseModel):
     hardware_type: HardwareType
     cpu_cores: int
     memory_mb: int
+    name: Optional[str] = None
 
 class NodeHeartbeat(BaseModel):
     node_id: str
+    name: Optional[str] = None
     cpu_usage: float
     memory_usage: float
     is_busy: bool
+    containers_running: int = 0
+    max_containers: int = 10
+    avg_cold_start_ms: Optional[float] = None
+    avg_warm_start_ms: Optional[float] = None
 
 # --- FaaS Schemas ---
 
@@ -62,3 +68,4 @@ class TaskResultCallback(BaseModel):
     result: str
     node_id: str
     status: str = "done"  # "done" or "failed"
+    latency_ms: Optional[float] = None
