@@ -25,7 +25,7 @@ app.post('/exec', async (req, res) => {
 
     try {
         let retValue;
-        
+
         try {
             retValue = await runInNewContext(codeStr, sandbox);
         } catch (rawErr) {

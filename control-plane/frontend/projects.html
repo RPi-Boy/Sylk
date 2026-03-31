@@ -77,6 +77,9 @@
         }
     </script>
     <style>
+    html {
+      overflow-y: scroll;
+    }
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
@@ -106,6 +109,9 @@
             padding-bottom: 2px;
         }
     </style>
+    <script src="js/session.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
 </head>
 
 <body class="bg-background text-on-background font-body selection:bg-primary/30 antialiased">
@@ -148,7 +154,7 @@
     <main class="relative pb-20 px-8 max-w-7xl mx-auto min-h-screen">
         <div class="absolute inset-0 z-0 hero-glow pointer-events-none"></div>
         <!-- Header Section -->
-        <header class="relative z-10 mb-16 flex flex-col md:flex-row md:items-end justify-between gap-8">
+        <header class="relative z-10 mb-16 flex flex-col md:flex-row md:items-end justify-between gap-8 stagger-boot">
             <div class="space-y-4">
                 <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-white font-headline leading-none">
                     Your Projects</h1>
@@ -164,7 +170,7 @@
         <!-- Projects Grid -->
         <section class="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Project 1 -->
-            <div class="glass-card group p-8 rounded-2xl hover:border-primary/40 transition-all cursor-pointer"
+            <div class="glass-card group p-8 rounded-2xl hover:border-primary/40 transition-all cursor-pointer stagger-boot mesh-glass" style="--mesh-color: rgba(210,187,255,0.4);"
                 onclick="location.href='logs.html'">
                 <div class="flex justify-between items-start mb-6">
                     <div class="flex items-center gap-3">
@@ -183,7 +189,7 @@
                 <div class="space-y-4 mb-6">
                     <div class="flex justify-between text-xs">
                         <span class="text-on-surface-variant">Avg. Latency</span>
-                        <span class="text-white font-bold">12ms</span>
+                        <span class="text-white font-bold count-up-metric" data-val="12ms">0ms</span>
                     </div>
                     <div class="h-1 bg-white/5 rounded-full overflow-hidden">
                         <div class="h-full bg-primary/40 w-1/4"></div>
@@ -203,7 +209,7 @@
                 </div>
             </div>
             <!-- Project 2 -->
-            <div class="glass-card group p-8 rounded-2xl hover:border-secondary/40 transition-all cursor-pointer"
+            <div class="glass-card group p-8 rounded-2xl hover:border-secondary/40 transition-all cursor-pointer stagger-boot mesh-glass" style="--mesh-color: rgba(174,198,255,0.4);"
                 onclick="location.href='logs.html'">
                 <div class="flex justify-between items-start mb-6">
                     <div class="flex items-center gap-3">
@@ -223,7 +229,7 @@
                 <div class="space-y-4 mb-6">
                     <div class="flex justify-between text-xs">
                         <span class="text-on-surface-variant">Throughput</span>
-                        <span class="text-white font-bold">1.2 GB/s</span>
+                        <span class="text-white font-bold count-up-metric" data-val="1.2 GB/s">0 GB/s</span>
                     </div>
                     <div class="h-1 bg-white/5 rounded-full overflow-hidden">
                         <div class="h-full bg-secondary/40 w-3/4"></div>
@@ -240,7 +246,7 @@
                 </div>
             </div>
             <!-- Project 3 -->
-            <div class="glass-card group p-8 rounded-2xl hover:border-error/40 transition-all cursor-pointer"
+            <div class="glass-card group p-8 rounded-2xl hover:border-error/40 transition-all cursor-pointer stagger-boot mesh-glass" style="--mesh-color: rgba(255,180,171,0.4);"
                 onclick="location.href='logs.html'">
                 <div class="flex justify-between items-start mb-6">
                     <div class="flex items-center gap-3">
@@ -260,7 +266,7 @@
                 <div class="space-y-4 mb-6">
                     <div class="flex justify-between text-xs text-error">
                         <span class="text-error/60">Success Rate</span>
-                        <span class="text-error font-bold">12%</span>
+                        <span class="text-error font-bold count-up-metric" data-val="12%">0%</span>
                     </div>
                     <div class="h-1 bg-white/5 rounded-full overflow-hidden">
                         <div class="h-full bg-error/40 w-[12%]"></div>
