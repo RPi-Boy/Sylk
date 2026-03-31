@@ -23,3 +23,8 @@ During the review, I identified two technical problems that violated structural 
 ***
 
 *All changes have been deployed identically and the system is operating strictly flawlessly.*
+
+
+
+
+curl -X POST http://localhost:8000/fn/isweartogodplswork -H "Content-Type: application/json" -d '{"params": {"a": 25, "b": 10}}'

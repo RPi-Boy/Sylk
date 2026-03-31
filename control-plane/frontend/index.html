@@ -77,6 +77,9 @@
     }
   </script>
   <style>
+    html {
+      overflow-y: scroll;
+    }
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
@@ -144,6 +147,62 @@
 </head>
 
 <body class="bg-background text-on-background font-body selection:bg-primary/30 antialiased">
+
+  <!-- ===== SPLASH INTRO SCREEN ===== -->
+  <div id="splash-screen" style="position:fixed;inset:0;z-index:9999;background:#000;display:flex;align-items:center;justify-content:center;transition:opacity 0.8s ease;">
+    <video autoplay muted playsinline id="splash-video" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+      <source src="assets/sylk-hero.mp4" type="video/mp4">
+    </video>
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.5) 100%);"></div>
+    <div style="position:relative;z-index:10;text-align:center;">
+      <h1 style="font-family:'Inter',sans-serif;font-size:5rem;font-weight:900;letter-spacing:-0.06em;color:#fff;margin:0;opacity:0;animation:splash-text-in 1s ease 0.5s forwards;">Sylk</h1>
+      <p style="font-family:'Space Grotesk',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:0.35em;color:rgba(255,255,255,0.4);margin-top:1rem;opacity:0;animation:splash-text-in 0.8s ease 1s forwards;">Kinetic Compute Engine</p>
+    </div>
+  </div>
+  <style>
+    @keyframes splash-text-in {
+      from { opacity:0; transform:translateY(12px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+  </style>
+  <script>
+    (function() {
+      var splash = document.getElementById('splash-screen');
+      var splashVideo = document.getElementById('splash-video');
+      var nav = performance.getEntriesByType('navigation')[0];
+      var navType = nav ? nav.type : 'navigate';
+      var cameFromPage = sessionStorage.getItem('sylk-nav');
+
+      // Clear the flag immediately
+      sessionStorage.removeItem('sylk-nav');
+
+      if (navType === 'reload') {
+        // Refresh → always show splash
+        showSplash();
+      } else if (cameFromPage) {
+        // Clicked a link from deploy/logs/projects/etc → skip
+        splash.remove();
+      } else {
+        // First visit, bookmark, external link → show splash
+        showSplash();
+      }
+
+      function showSplash() {
+        splashVideo.addEventListener('ended', function() {
+          splash.style.opacity = '0';
+          setTimeout(function() { splash.remove(); }, 800);
+        });
+        // Fallback if video fails or is very long
+        setTimeout(function() {
+          if (document.getElementById('splash-screen')) {
+            splash.style.opacity = '0';
+            setTimeout(function() { splash.remove(); }, 800);
+          }
+        }, 8000);
+      }
+    })();
+  </script>
+
   <!-- TopNavBar -->
   <nav class="fixed top-0 w-full z-[100] bg-black/60 backdrop-blur-xl border-b border-white/5">
     <div class="flex items-center justify-between px-8 py-4 max-w-7xl mx-auto">
@@ -151,7 +210,6 @@
         <span class="text-2xl font-bold tracking-tighter text-white font-headline cursor-pointer"
           onclick="location.href='index.html'">Sylk</span>
         <div class="hidden md:flex gap-8 items-center">
-          <a class="text-white font-medium text-sm tracking-tight nav-active" href="index.html">Home</a>
           <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight"
             href="deploy.html">Deploy</a>
           <a class="text-on-surface-variant hover:text-white transition-colors font-medium text-sm tracking-tight"
@@ -179,22 +237,18 @@
     </div>
   </nav>
 
-  <!-- Massive Centered Hero Section with Background Monolith -->
+  <!-- Massive Centered Hero Section with Background Video -->
   <header class="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-20 px-8 overflow-hidden">
-    <!-- Background Monolith Container -->
-    <div class="absolute inset-0 z-0 flex items-center justify-center pointer-events-none opacity-40">
-      <div class="relative w-full h-full max-w-6xl monolith-blob animate-slow-pulse" id="monolith-container">
-        <div class="absolute inset-0 flex items-center justify-center">
-          <img alt="Abstract Monolith" class="w-full h-full object-contain mix-blend-screen"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhI2v3oi8jL0-yHQdfrbpJmCYtwsUe4laPUTYycPV7ZawmBdYrTK3So1UVC2ZhbZKnFl9Q8LAPfigzKs9N-sI1Amwt5dPawU-hWT6mrQInKLMkSZLr2ukLgQh6kSNqZiE6V4tU6aAOX5NDF31j0Y9k3pkxg6HCXMTqZdqRpJf8dDzyPhHp_JHs0P-1SQW0_AlfAW75orCu1CSCUdqBKEJRI48jKYim0WEHpc_YmsxVaRpYwGjPlgKmLM3mJdxpsk_wsJHPs3nztkk" />
-        </div>
-        <div
-          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-radial-gradient from-primary/20 via-transparent to-transparent blur-[120px]">
-        </div>
-      </div>
+    <!-- Background Video Loop (plays behind hero content) -->
+    <div id="hero-bg-container" class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+      <video autoplay muted loop playsinline class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 min-w-full min-h-full w-auto h-auto object-cover opacity-40">
+        <source src="assets/sylk-hero.mp4" type="video/mp4">
+      </video>
+      <div class="absolute inset-0" style="background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%);"></div>
+      <div class="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black to-transparent"></div>
     </div>
     <div class="absolute inset-0 z-0 hero-glow"></div>
-    <div class="relative z-20 text-center max-w-4xl mx-auto">
+    <div class="relative z-20 text-center max-w-4xl mx-auto" id="hero-content">
       <h1 class="text-6xl md:text-8xl font-extrabold text-white tracking-tight mb-8 leading-[0.9] text-balance">
         Compute at the <span
           class="bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-container to-secondary">velocity
@@ -316,14 +370,26 @@
   <script>
     window.addEventListener('scroll', () => {
       const scrolled = window.scrollY;
-      const monolith = document.getElementById('monolith-container');
-      if (monolith) {
-        const scale = 1 + scrolled * 0.0002;
-        const translateY = scrolled * 0.15;
-        const rotate = scrolled * 0.02;
-        const opacity = Math.max(0.1, 0.4 - scrolled * 0.0005);
-        monolith.style.transform = `scale(${scale}) translateY(${translateY}px) rotate(${rotate}deg)`;
-        monolith.style.opacity = opacity;
+
+      // Parallax Web Expansion: Expanding & Rotating the background grid video
+      const heroBg = document.getElementById('hero-bg-container');
+      if (heroBg && scrolled <= window.innerHeight) {
+        // Expand outward to simulate diving deeper into the network
+        const scale = 1 + (scrolled * 0.0005);
+        // Slight organic rotation
+        const rotate = scrolled * 0.005;
+        // Shift it down at a slower rate than the scroll (parallax)
+        const translateY = scrolled * 0.4;
+        
+        heroBg.style.transform = `translateY(${translateY}px) scale(${scale}) rotate(${rotate}deg)`;
+        heroBg.style.opacity = Math.max(0, 1 - (scrolled / window.innerHeight) * 1.5);
+      }
+
+      // Hero Content subtle upward parallax
+      const heroContent = document.getElementById('hero-content');
+      if (heroContent && scrolled <= window.innerHeight) {
+        heroContent.style.transform = `translateY(${scrolled * -0.2}px)`;
+        heroContent.style.opacity = Math.max(0, 1 - (scrolled / (window.innerHeight * 0.6)));
       }
     });
 

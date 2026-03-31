@@ -11,7 +11,10 @@ const Session = {
         localStorage.removeItem("sylk_auth_token");
         localStorage.removeItem("sylk_auth_email");
         localStorage.removeItem("sylk_auth_username");
-        if (!window.location.pathname.endsWith("auth.html")) {
+        const publicPages = ["auth", "index", "logs", "metrics", "projects", "deploy"];
+        const path = window.location.pathname;
+        const isPublic = publicPages.some(p => path.includes(p)) || path === "/";
+        if (!isPublic) {
             window.location.href = "auth.html";
         }
     },
@@ -24,17 +27,16 @@ const Session = {
 
 // Pages that do NOT require authentication to view
 const PUBLIC_PAGES = [
-    "auth.html",
-    "index.html",
-    "logs.html",
-    "metrics.html",
-    "projects.html",
-    "deploy.html",
-    "/"
+    "auth",
+    "index",
+    "logs",
+    "metrics",
+    "projects",
+    "deploy"
 ];
 
 const currentPath = window.location.pathname;
-const isPublicPage = PUBLIC_PAGES.some(page => currentPath.endsWith(page) || currentPath === page);
+const isPublicPage = PUBLIC_PAGES.some(page => currentPath.includes(page)) || currentPath === "/";
 
 if (!isPublicPage) {
     Session.requireAuth();

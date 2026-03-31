@@ -1,5 +1,5 @@
 """Sylk Node.js Runtime Worker - Dedicated worker for Node container execution."""
-import time, redis, os, json, base64, uuid, docker, threading, yaml, requests
+import time, redis, os, json, base64, uuid, docker, threading, yaml, requests, signal, sys, atexit
 from watchdog import Watchdog
 from registration import register, send_heartbeat, get_node_info
 
@@ -19,7 +19,7 @@ NODE_ID = f"{_base_id}-js-{uuid.uuid4().hex[:6]}"
 CONTROL_PLANE_URL = config.get("control_plane_url", "http://localhost:8000")
 POLLING_INTERVAL = config.get("polling_interval", 2)
 ARCH = config.get("arch", get_node_info()["hardware_type"])
-WARM_POOL_SIZE = 2
+WARM_POOL_SIZE = 3
 
 REDIS_URL = config.get("redis_url", os.getenv("REDIS_URL", "redis://localhost:6379"))
 r = redis.from_url(REDIS_URL)
@@ -27,12 +27,43 @@ docker_client = docker.from_env()
 watchdog = Watchdog(threshold=config.get("max_cpu_threshold", 80.0))
 warm_pool = []
 pool_lock = threading.Lock()
+shutdown_flag = threading.Event()
 
-QUEUE_NAME = f"q_{ARCH}"
+QUEUE_NAME = "q_node"
+
+# ─── Graceful Shutdown ───────────────────────────────────────────────
+
+def cleanup_containers():
+    """Remove all containers in the warm pool."""
+    print("\n[SHUTDOWN] Cleaning up warm pool containers...")
+    with pool_lock:
+        for c in warm_pool:
+            try:
+                c.remove(force=True)
+                print(f"  Removed: {c.id[:12]}")
+            except Exception:
+                pass
+        warm_pool.clear()
+    print("[SHUTDOWN] Cleanup complete.")
+
+def signal_handler(sig, frame):
+    """Handle SIGINT (Ctrl+C) and SIGTERM gracefully."""
+    print(f"\n[SHUTDOWN] Received signal {sig}. Shutting down gracefully...")
+    shutdown_flag.set()
+    cleanup_containers()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
+atexit.register(cleanup_containers)
+
+# ─── Container Management ────────────────────────────────────────────
 
 def reap_zombies():
     try:
         for c in docker_client.containers.list(all=True, filters={"label": "sylk-lang=node"}):
+            if c.labels.get("sylk-type") == "infrastructure":
+                continue
             print(f"Reaping zombie: {c.id[:12]}")
             c.remove(force=True)
     except Exception as e:
@@ -51,7 +82,7 @@ def start_warm_container():
         print(f"Failed to warm Node.js container: {e}")
 
 def fill_pool():
-    while True:
+    while not shutdown_flag.is_set():
         with pool_lock:
             count = len(warm_pool)
         if count >= WARM_POOL_SIZE:
@@ -67,19 +98,35 @@ def get_container():
     with pool_lock:
         return warm_pool.pop(0) if warm_pool else None
 
+# ─── Task Execution ──────────────────────────────────────────────────
+
 def execute_task(task):
     task_id = task.get("task_id", "unknown")
     code = task.get("code", "")
+    params = task.get("params", {})
+    callback_url = task.get("callback_url", "")
     container = get_container()
     if not container:
         print(f"No container available for {task_id}")
+        try:
+            r.publish("sylk_events", json.dumps({"event": "task_error", "task_id": task_id, "node_id": NODE_ID, "error": "No container available"}))
+        except Exception:
+            pass
+        post_callback(callback_url, task_id, "No container available", "failed")
         return False
 
     threading.Thread(target=fill_pool, daemon=True).start()
     print(f"Executing {task_id} on {container.id[:12]}")
+    try:
+        r.publish("sylk_events", json.dumps({"event": "task_executing", "task_id": task_id, "node_id": NODE_ID}))
+    except Exception:
+        pass
 
     try:
-        b64 = base64.b64encode(code.encode()).decode()
+        params_json = json.dumps(params)
+        injected_code = f"const params = {params_json};\n{code}"
+
+        b64 = base64.b64encode(injected_code.encode()).decode()
         script = (
             f"const c=Buffer.from('{b64}','base64').toString();"
             f"fetch('http://localhost:5000/exec',{{method:'POST',"
@@ -90,54 +137,83 @@ def execute_task(task):
         timer = threading.Timer(60.0, lambda: container.kill())
         timer.start()
         try:
-            _, output = container.exec_run(["node", "-e", script])
+            exit_code, output = container.exec_run(["node", "-e", script])
             result = output.decode().strip()
             print(f"Result [{task_id}]: {result}")
         finally:
             timer.cancel()
 
+        if "exec failed" in result or "executable file not found" in result:
+            try:
+                r.publish("sylk_events", json.dumps({"event": "task_error", "task_id": task_id, "node_id": NODE_ID, "error": result[:200]}))
+            except Exception:
+                pass
+            r.set(f"result:{task_id}", result, ex=3600)
+            post_callback(callback_url, task_id, result, "failed")
+            return False
+
         r.set(f"result:{task_id}", result, ex=3600)
+        post_callback(callback_url, task_id, result, "done")
         return True
     except Exception as e:
         print(f"Exec failed [{task_id}]: {e}")
+        try:
+            r.publish("sylk_events", json.dumps({"event": "task_error", "task_id": task_id, "node_id": NODE_ID, "error": str(e)[:200]}))
+        except Exception:
+            pass
+        post_callback(callback_url, task_id, str(e), "failed")
         return False
     finally:
-        container.remove(force=True)
+        try:
+            container.remove(force=True)
+        except Exception:
+            pass
+
+# ─── Callback ─────────────────────────────────────────────────────────
+
+def post_callback(callback_url, task_id, result, status):
+    if not callback_url:
+        return
+    try:
+        full_url = f"{CONTROL_PLANE_URL}{callback_url}"
+        payload = {"task_id": task_id, "result": result, "node_id": NODE_ID, "status": status}
+        resp = requests.post(full_url, json=payload, timeout=10)
+        print(f"Callback [{task_id}] -> {resp.status_code}")
+    except Exception as e:
+        print(f"Callback failed [{task_id}]: {e}")
+
+# ─── Polling ──────────────────────────────────────────────────────────
 
 def poll_tasks():
-    """Use BLPOP instead of deprecated BRPOPLPUSH for Redis 7+ compat."""
     result = r.blpop(QUEUE_NAME, timeout=POLLING_INTERVAL)
     if result:
         _, raw = result
         task = json.loads(raw)
-        lang = task.get("language", "python")
-
-        # Only process Node tasks; requeue others
-        if lang != "node":
-            print(f"Requeuing non-node task {task.get('task_id')}")
-            r.rpush(QUEUE_NAME, raw)
-            return
-
-        event_picked_up = {"event": "task_picked_up", "task_id": task.get("task_id"), "node_id": NODE_ID}
-        r.publish("sylk_events", json.dumps(event_picked_up))
+        try:
+            r.publish("sylk_events", json.dumps({"event": "task_picked_up", "task_id": task.get("task_id"), "node_id": NODE_ID}))
+        except Exception:
+            pass
 
         success = execute_task(task)
-        if success:
-            event_completed = {"event": "task_completed", "task_id": task.get("task_id"), "node_id": NODE_ID}
-            r.publish("sylk_events", json.dumps(event_completed))
-        else:
-            event_failed = {"event": "task_failed", "task_id": task.get("task_id"), "node_id": NODE_ID}
-            r.publish("sylk_events", json.dumps(event_failed))
-            print(f"Requeuing failed task {task.get('task_id')}")
-            r.rpush(QUEUE_NAME, raw)
+        event = "task_completed" if success else "task_failed"
+        try:
+            r.publish("sylk_events", json.dumps({"event": event, "task_id": task.get("task_id"), "node_id": NODE_ID}))
+        except Exception:
+            pass
 
 def heartbeat_loop():
-    while True:
-        send_heartbeat(CONTROL_PLANE_URL, NODE_ID, watchdog.is_busy())
+    while not shutdown_flag.is_set():
+        try:
+            send_heartbeat(CONTROL_PLANE_URL, NODE_ID, watchdog.is_busy())
+        except Exception:
+            pass
         time.sleep(30)
 
+# ─── Main ─────────────────────────────────────────────────────────────
+
 if __name__ == "__main__":
-    print(f"=== Sylk Node.js Worker [{NODE_ID}] (Arch: {ARCH}) ===")
+    print(f"=== Sylk Node.js Worker [{NODE_ID}] ===")
+    print(f"Queue: {QUEUE_NAME} | Control Plane: {CONTROL_PLANE_URL}")
     if not register(CONTROL_PLANE_URL, NODE_ID):
         print("Warning: Registration failed. Proceeding anyway.")
 
@@ -146,10 +222,21 @@ if __name__ == "__main__":
     fill_pool()
 
     print(f"Listening on queue: {QUEUE_NAME}")
-    while True:
-        if not watchdog.is_busy():
-            poll_tasks()
-        else:
-            print(f"Busy (CPU: {watchdog.get_cpu_average():.1f}%), pausing...")
+    while not shutdown_flag.is_set():
+        try:
+            if not watchdog.is_busy():
+                poll_tasks()
+            else:
+                print(f"Busy (CPU: {watchdog.get_cpu_average():.1f}%), pausing...")
+                time.sleep(5)
+            time.sleep(0.5)
+        except redis.ConnectionError as e:
+            print(f"[ERROR] Redis connection lost: {e}")
+            print("  Retrying in 5 seconds...")
             time.sleep(5)
-        time.sleep(0.5)
+        except redis.TimeoutError as e:
+            print(f"[ERROR] Redis timeout: {e}")
+            time.sleep(2)
+        except Exception as e:
+            print(f"[ERROR] Unexpected error in main loop: {e}")
+            time.sleep(3)
