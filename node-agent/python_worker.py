@@ -1,14 +1,36 @@
 """Sylk Python Runtime Worker - Dedicated worker for Python container execution."""
-import time, redis, os, json, base64, uuid, docker, threading, yaml, requests, signal, sys, atexit, random, string, socket, math
+
+import time
+import redis
+import os
+import json
+import base64
+import uuid
+import docker
+import threading
+import yaml
+import requests
+import signal
+import sys
+import atexit
+import random
+import string
+import socket
+import math
 import concurrent.futures
 from watchdog import Watchdog
-from registration import register, send_heartbeat, get_node_info, calculate_max_containers
+from registration import (
+    register,
+    send_heartbeat,
+    get_node_info,
+    calculate_max_containers,
+)
 
 SANDBOX_CONFIG = {
     "network_mode": "none",
     "read_only": True,
     "mem_limit": "512m",
-    "labels": {"sylk": "true", "sylk-lang": "python"}
+    "labels": {"sylk": "true", "sylk-lang": "python"},
 }
 
 config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
@@ -41,13 +63,14 @@ try:
     _display_user = os.getlogin()
 except Exception:
     _display_user = socket.gethostname()
-_rand_suffix = ''.join(random.choices(string.ascii_lowercase, k=5))
+_rand_suffix = "".join(random.choices(string.ascii_lowercase, k=5))
 NODE_NAME = f"{_display_user}-{_rand_suffix}"
 
 # ─── Spinup Time Tracking ────────────────────────────────────────────
 cold_start_times = []
 warm_start_times = []
 timing_lock = threading.Lock()
+
 
 def _record_timing(t0, is_cold):
     """Record task execution timing for cold/warm start metrics."""
@@ -58,21 +81,26 @@ def _record_timing(t0, is_cold):
         if len(target) > 20:
             target.pop(0)
 
+
 # ─── Idle Tracking ───────────────────────────────────────────────────
 last_task_time = time.time()
 task_time_lock = threading.Lock()
+
 
 def touch_task_time():
     global last_task_time
     with task_time_lock:
         last_task_time = time.time()
 
+
 def get_idle_seconds():
     with task_time_lock:
         return time.time() - last_task_time
 
+
 task_arrivals = []
 arrival_lock = threading.Lock()
+
 
 def record_task_arrival():
     now = time.time()
@@ -80,15 +108,18 @@ def record_task_arrival():
         task_arrivals.append(now)
         task_arrivals[:] = [t for t in task_arrivals if now - t <= 30]
 
+
 def get_tps():
     now = time.time()
     with arrival_lock:
         valid = [t for t in task_arrivals if now - t <= 30]
         return len(valid) / 30.0
 
+
 QUEUE_NAME = "q_python"
 
 # ─── Graceful Shutdown ───────────────────────────────────────────────
+
 
 def cleanup_containers():
     """Remove all containers in the warm pool."""
@@ -103,6 +134,7 @@ def cleanup_containers():
         warm_pool.clear()
     print("[SHUTDOWN] Cleanup complete.")
 
+
 def signal_handler(sig, frame):
     """Handle SIGINT (Ctrl+C) and SIGTERM gracefully."""
     print(f"\n[SHUTDOWN] Received signal {sig}. Shutting down gracefully...")
@@ -110,21 +142,26 @@ def signal_handler(sig, frame):
     cleanup_containers()
     sys.exit(0)
 
+
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 atexit.register(cleanup_containers)
 
 # ─── Container Management ────────────────────────────────────────────
 
+
 def reap_zombies():
     try:
-        for c in docker_client.containers.list(all=True, filters={"label": "sylk-lang=python"}):
+        for c in docker_client.containers.list(
+            all=True, filters={"label": "sylk-lang=python"}
+        ):
             if c.labels.get("sylk-type") == "infrastructure":
                 continue
             print(f"Reaping zombie: {c.id[:12]}")
             c.remove(force=True)
     except Exception as e:
         print(f"Reap error: {e}")
+
 
 def start_warm_container():
     img_arch = "x86" if ARCH == "default" else ARCH
@@ -151,6 +188,7 @@ def start_warm_container():
     except Exception as e:
         print(f"Failed to warm Python container: {e}")
 
+
 def pool_manager_loop():
     """Dynamically maintains warm_pool to match TARGET_POOL_SIZE"""
     while not shutdown_flag.is_set():
@@ -174,6 +212,7 @@ def pool_manager_loop():
             pass
         time.sleep(1)
 
+
 def get_container():
     """Returns (container, is_cold_start) tuple."""
     with pool_lock:
@@ -184,7 +223,9 @@ def get_container():
     with pool_lock:
         return (warm_pool.pop(0) if warm_pool else None), True
 
+
 # ─── Task Execution ──────────────────────────────────────────────────
+
 
 def execute_task(task):
     touch_task_time()
@@ -197,16 +238,33 @@ def execute_task(task):
     if not container:
         print(f"No container available for {task_id}")
         try:
-            r.publish("sylk_events", json.dumps({"event": "task_error", "task_id": task_id, "node_id": NODE_ID, "error": "No container available"}))
+            r.publish(
+                "sylk_events",
+                json.dumps(
+                    {
+                        "event": "task_error",
+                        "task_id": task_id,
+                        "node_id": NODE_ID,
+                        "error": "No container available",
+                    }
+                ),
+            )
         except Exception:
             pass
         latency_ms = round((time.time() - t0) * 1000, 2)
-        post_callback(callback_url, task_id, "No container available", "failed", latency_ms)
+        post_callback(
+            callback_url, task_id, "No container available", "failed", latency_ms
+        )
         return False
 
     print(f"Executing {task_id} on {container.id[:12]}")
     try:
-        r.publish("sylk_events", json.dumps({"event": "task_executing", "task_id": task_id, "node_id": NODE_ID}))
+        r.publish(
+            "sylk_events",
+            json.dumps(
+                {"event": "task_executing", "task_id": task_id, "node_id": NODE_ID}
+            ),
+        )
     except Exception:
         pass
 
@@ -233,9 +291,23 @@ def execute_task(task):
         finally:
             timer.cancel()
 
-        if exit_code != 0 or "exec failed" in result or "executable file not found" in result:
+        if (
+            exit_code != 0
+            or "exec failed" in result
+            or "executable file not found" in result
+        ):
             try:
-                r.publish("sylk_events", json.dumps({"event": "task_error", "task_id": task_id, "node_id": NODE_ID, "error": result[:200]}))
+                r.publish(
+                    "sylk_events",
+                    json.dumps(
+                        {
+                            "event": "task_error",
+                            "task_id": task_id,
+                            "node_id": NODE_ID,
+                            "error": result[:200],
+                        }
+                    ),
+                )
             except Exception:
                 pass
             r.set(f"result:{task_id}", result, ex=3600)
@@ -250,7 +322,17 @@ def execute_task(task):
     except Exception as e:
         print(f"Exec failed [{task_id}]: {e}")
         try:
-            r.publish("sylk_events", json.dumps({"event": "task_error", "task_id": task_id, "node_id": NODE_ID, "error": str(e)[:200]}))
+            r.publish(
+                "sylk_events",
+                json.dumps(
+                    {
+                        "event": "task_error",
+                        "task_id": task_id,
+                        "node_id": NODE_ID,
+                        "error": str(e)[:200],
+                    }
+                ),
+            )
         except Exception:
             pass
         latency_ms = round((time.time() - t0) * 1000, 2)
@@ -263,14 +345,21 @@ def execute_task(task):
         except Exception:
             pass
 
+
 # ─── Callback ─────────────────────────────────────────────────────────
+
 
 def post_callback(callback_url, task_id, result, status, latency_ms=None):
     if not callback_url:
         return
     try:
         full_url = f"{CONTROL_PLANE_URL}{callback_url}"
-        payload = {"task_id": task_id, "result": result, "node_id": NODE_ID, "status": status}
+        payload = {
+            "task_id": task_id,
+            "result": result,
+            "node_id": NODE_ID,
+            "status": status,
+        }
         if latency_ms is not None:
             payload["latency_ms"] = latency_ms
         resp = requests.post(full_url, json=payload, timeout=10)
@@ -278,7 +367,9 @@ def post_callback(callback_url, task_id, result, status, latency_ms=None):
     except Exception as e:
         print(f"Callback failed [{task_id}]: {e}")
 
+
 # ─── Polling ──────────────────────────────────────────────────────────
+
 
 def run_task_wrapper(task):
     global active_tasks
@@ -288,13 +379,14 @@ def run_task_wrapper(task):
         with active_tasks_lock:
             active_tasks -= 1
 
+
 def poll_tasks():
     global active_tasks
-    
+
     with active_tasks_lock:
         limit = max(1, current_max_cap - 1)
         current_active = active_tasks
-        
+
     if current_active >= limit:
         time.sleep(0.5)
         return
@@ -309,14 +401,24 @@ def poll_tasks():
         task = json.loads(raw)
         record_task_arrival()
         try:
-            r.publish("sylk_events", json.dumps({"event": "task_picked_up", "task_id": task.get("task_id"), "node_id": NODE_ID}))
+            r.publish(
+                "sylk_events",
+                json.dumps(
+                    {
+                        "event": "task_picked_up",
+                        "task_id": task.get("task_id"),
+                        "node_id": NODE_ID,
+                    }
+                ),
+            )
         except Exception:
             pass
 
         with active_tasks_lock:
             active_tasks += 1
-            
+
         executor.submit(run_task_wrapper, task)
+
 
 def heartbeat_loop():
     while not shutdown_flag.is_set():
@@ -324,11 +426,15 @@ def heartbeat_loop():
             # Count running containers for THIS worker's language only
             try:
                 lang_containers = docker_client.containers.list(
-                    filters={"label": "sylk-lang=python"})
-                containers_running = len([
-                    c for c in lang_containers
-                    if c.labels.get("sylk-type") != "infrastructure"
-                ])
+                    filters={"label": "sylk-lang=python"}
+                )
+                containers_running = len(
+                    [
+                        c
+                        for c in lang_containers
+                        if c.labels.get("sylk-type") != "infrastructure"
+                    ]
+                )
             except Exception:
                 containers_running = 0
 
@@ -337,13 +443,21 @@ def heartbeat_loop():
             current_max_cap = max_cap
 
             with timing_lock:
-                avg_cold = (sum(cold_start_times) / len(cold_start_times)
-                           if cold_start_times else None)
-                avg_warm = (sum(warm_start_times) / len(warm_start_times)
-                           if warm_start_times else None)
+                avg_cold = (
+                    sum(cold_start_times) / len(cold_start_times)
+                    if cold_start_times
+                    else None
+                )
+                avg_warm = (
+                    sum(warm_start_times) / len(warm_start_times)
+                    if warm_start_times
+                    else None
+                )
 
             send_heartbeat(
-                CONTROL_PLANE_URL, NODE_ID, watchdog.is_busy(),
+                CONTROL_PLANE_URL,
+                NODE_ID,
+                watchdog.is_busy(),
                 name=NODE_NAME,
                 containers_running=containers_running,
                 max_containers=max_cap,
@@ -354,27 +468,33 @@ def heartbeat_loop():
             pass
         time.sleep(10)
 
+
 def predictive_scaler_loop():
     global TARGET_POOL_SIZE
     while not shutdown_flag.is_set():
         try:
             tps = get_tps()
             with timing_lock:
-                avg_time = (sum(warm_start_times) / len(warm_start_times)) if warm_start_times else 500.0
-            
+                avg_time = (
+                    (sum(warm_start_times) / len(warm_start_times))
+                    if warm_start_times
+                    else 500.0
+                )
+
             # Predict concurrency needed: tps * avg_exec_time_in_seconds
             base_concurrency = tps * (avg_time / 1000.0)
-            
+
             # User wants 10% scaling sensitivity + 1 buffer
             desired = int(math.ceil(base_concurrency * 1.1)) + 1
-            
+
             # Maintain at least 3 containers unless max_cap is lower
             min_warm = min(3, max(1, current_max_cap))
-            
+
             TARGET_POOL_SIZE = max(min_warm, min(desired, current_max_cap))
         except Exception:
             pass
         time.sleep(2)
+
 
 # ─── Main ─────────────────────────────────────────────────────────────
 

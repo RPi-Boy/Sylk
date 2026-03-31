@@ -5,13 +5,15 @@ import os
 
 try:
     import psutil
+
     HAS_PSUTIL = True
 except ImportError:
     HAS_PSUTIL = False
 
+
 def get_node_info():
     arch = platform.machine().lower()
-    
+
     # Mock GPU support based on env variable
     if os.getenv("MOCK_GPU", "false").lower() == "true":
         hardware_type = "gpu"
@@ -32,8 +34,9 @@ def get_node_info():
         "hostname": socket.gethostname(),
         "hardware_type": hardware_type,
         "cpu_cores": cpu_cores,
-        "memory_mb": memory_mb
+        "memory_mb": memory_mb,
     }
+
 
 def register(url, node_id=None, name=None):
     info = get_node_info()
@@ -47,6 +50,7 @@ def register(url, node_id=None, name=None):
     except Exception as e:
         print(f"Registration failed: {e}")
         return False
+
 
 def calculate_max_containers(containers_running=0):
     """Calculate max containers this node can run based on available resources.
@@ -75,8 +79,17 @@ def calculate_max_containers(containers_running=0):
     except Exception:
         return 10
 
-def send_heartbeat(url, node_id, is_busy, name=None, containers_running=0,
-                   max_containers=10, avg_cold_start_ms=None, avg_warm_start_ms=None):
+
+def send_heartbeat(
+    url,
+    node_id,
+    is_busy,
+    name=None,
+    containers_running=0,
+    max_containers=10,
+    avg_cold_start_ms=None,
+    avg_warm_start_ms=None,
+):
     if HAS_PSUTIL:
         cpu_usage = psutil.cpu_percent(interval=None)
         memory_usage = psutil.virtual_memory().percent
@@ -100,6 +113,6 @@ def send_heartbeat(url, node_id, is_busy, name=None, containers_running=0,
     except Exception as e:
         print(f"Heartbeat failed: {e}")
 
+
 if __name__ == "__main__":
     print(f"Node Info: {get_node_info()}")
-
