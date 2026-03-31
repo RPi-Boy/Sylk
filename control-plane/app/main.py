@@ -1,5 +1,5 @@
 import asyncio
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -32,14 +32,17 @@ app.include_router(routes.router)
 # Note: Mount after router so API paths take precedence
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
+
 @app.on_event("startup")
 async def startup_event():
     # Start the fallback monitor background task
     asyncio.create_task(fallback_monitor())
 
+
 @app.get("/")
 async def root():
     return FileResponse("frontend/index.html")
+
 
 @app.get("/{path:path}")
 async def catch_all(path: str):

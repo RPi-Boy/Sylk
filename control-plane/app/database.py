@@ -1,4 +1,12 @@
-from sqlalchemy import create_engine, Column, String, Float, DateTime, Enum as SQLEnum, ForeignKey
+from sqlalchemy import (
+    create_engine,
+    Column,
+    String,
+    Float,
+    DateTime,
+    Enum as SQLEnum,
+    ForeignKey,
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import enum
@@ -6,7 +14,9 @@ import datetime
 
 import os
 
-_data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+_data_dir = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data"
+)
 os.makedirs(_data_dir, exist_ok=True)
 SQLALCHEMY_DATABASE_URL = f"sqlite:///{os.path.join(_data_dir, 'sylk_analytics.db')}"
 
@@ -17,12 +27,14 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
+
 class TaskStatusEnum(str, enum.Enum):
     QUEUED = "queued"
     PULLED = "pulled"
     EXECUTING = "executing"
     DONE = "done"
     FAILED = "failed"
+
 
 class FunctionRecord(Base):
     __tablename__ = "functions"
@@ -32,6 +44,7 @@ class FunctionRecord(Base):
     language = Column(String, nullable=False)  # "python" or "node"
     code = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
 
 class TaskRecord(Base):
     __tablename__ = "tasks"
@@ -45,6 +58,7 @@ class TaskRecord(Base):
     node_id = Column(String, nullable=True)
     latency_ms = Column(Float, nullable=True)
     simulated_cost = Column(Float, default=0.0)
+
 
 # Create tables
 Base.metadata.create_all(bind=engine)
