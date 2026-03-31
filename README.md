@@ -54,3 +54,7 @@ Instead of relying solely on expensive centralized cloud providers, Sylk routes 
 - [Contributor Guide](Guide.md) - Deep dive into architecture, APIs, and setting up the full mesh.
 - [Security Policy](SECURITY.md) - Details on sandboxing protections and known architectural vulnerabilities.
 - [Contributing](CONTRIBUTING.md) - Open lacunas and guidelines to contribute to Project Sylk.
+
+
+## AI Guidelines:
+I don't have aproblem with AI code generation, but I want to make sure that the code is well-documented and easy to understand, and most importantly, secure. Please perform self reviews before pushing code. This was a hackathon project fueled by caffeine, friends, and sheer willpower. We had to move fast and ended up breaking things, probably. But I want to do justice to this project and let it grow beyond the hackathon and it is beyond my expertise. I am looking forward to see what you can do with this project. 
